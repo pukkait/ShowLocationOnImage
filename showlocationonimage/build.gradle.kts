@@ -4,7 +4,7 @@ plugins {
     // gpt
 //    id("com.android.library")
     id("kotlin-android")
-
+    `maven-publish`
 }
 
 android {
@@ -38,11 +38,16 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
-
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+            withJavadocJar()
+        }
+    }
 }
 
 dependencies {
-    implementation (libs.kotlin.stdlib) // Adjust the version as needed
+    implementation(libs.kotlin.stdlib) // Adjust the version as needed
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
