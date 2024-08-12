@@ -12,4 +12,5 @@ buildscript {
         classpath ("com.android.tools.build:gradle:8.5.2") // Update to a compatible version
         // Other classpath dependencies
     }
+
 }
