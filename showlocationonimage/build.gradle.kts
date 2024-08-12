@@ -16,7 +16,7 @@ android {
         minSdk = 24
         targetSdk = 34
         versionCode = 1
-        versionName = "0.0.14.1"
+        versionName = "0.0.16"
         multiDexEnabled =  true
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -51,7 +51,7 @@ android {
         publications.create<MavenPublication>("release") {
             groupId = "com.pukkait"
             artifactId = "showlocationonimage"
-            version = "0.0.15"
+            version = "0.0.16"
 //            pom.packaging = "jar"
 //            artifact("ShowLoctionOnImage/showlocationonimage")
             pom {
