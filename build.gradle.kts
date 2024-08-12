@@ -9,7 +9,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath ("com.android.tools.build:gradle:8.0.0") // Update to a compatible version
+        classpath ("com.android.tools.build:gradle:8.5.2") // Update to a compatible version
         // Other classpath dependencies
     }
 }
