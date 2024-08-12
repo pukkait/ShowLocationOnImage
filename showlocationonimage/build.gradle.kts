@@ -16,8 +16,8 @@ android {
         minSdk = 24
         targetSdk = 34
         versionCode = 1
-        versionName = "0.0.16"
-        multiDexEnabled =  true
+        versionName = "0.0.17"
+        multiDexEnabled = true
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -49,9 +49,10 @@ android {
     }
     configure<PublishingExtension> {
         publications.create<MavenPublication>("release") {
+//            from(components["release"])
             groupId = "com.pukkait"
             artifactId = "showlocationonimage"
-            version = "0.0.16"
+            version = "0.0.17"
 //            pom.packaging = "jar"
 //            artifact("ShowLoctionOnImage/showlocationonimage")
             pom {
@@ -59,12 +60,12 @@ android {
                 description.set("A library for showing location on image.")
                 url.set("https://github.com/pukkait/ShowLocationOnImage")
             }
-            afterEvaluate {
-                from(components["release"])
-            }
+
         }
         repositories {
-            mavenLocal()
+            maven{
+                url = uri("https://jitpack.io")
+            }
         }
     }
 
