@@ -42,7 +42,7 @@ android {
 }
 
 dependencies {
-    implementation ("org.jetbrains.kotlin:kotlin-stdlib:1.8.20") // Adjust the version as needed
+    implementation (libs.kotlin.stdlib) // Adjust the version as needed
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
