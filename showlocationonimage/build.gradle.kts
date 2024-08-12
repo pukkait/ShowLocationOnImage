@@ -50,8 +50,7 @@ android {
             artifactId = "showlocationonimage"
             version = "0.0.1"
 //            pom.packaging = "jar"
-            artifact("ShowLocationOnImage/showlocationonimage")
-
+//            artifact("ShowLoctionOnImage/showlocationonimage")
         }
         repositories {
             mavenLocal()
