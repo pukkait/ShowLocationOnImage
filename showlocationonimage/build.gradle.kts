@@ -48,9 +48,14 @@ android {
         publications.create<MavenPublication>("showlocationonimage") {
             groupId = "com.pukkait.showlocationonimage"
             artifactId = "showlocationonimage"
-            version = "0.0.7"
+            version = "0.0.8"
 //            pom.packaging = "jar"
 //            artifact("ShowLoctionOnImage/showlocationonimage")
+            pom {
+                name.set("ShowLocationOnImage")
+                description.set("A library for showing location on image.")
+                url.set("https://github.com/pukkait/ShowLocationOnImage")
+            }
         }
         repositories {
             mavenLocal()
