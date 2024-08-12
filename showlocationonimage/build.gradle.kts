@@ -17,10 +17,10 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
+        multiDexEnabled =  true
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
-
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -28,6 +28,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+        getByName("debug") {
+            multiDexEnabled = true
         }
     }
 
@@ -45,16 +48,19 @@ android {
         }
     }
     configure<PublishingExtension> {
-        publications.create<MavenPublication>("showlocationonimage") {
-            groupId = "com.pukkait.showlocationonimage"
+        publications.create<MavenPublication>("release") {
+            groupId = "com.pukkait"
             artifactId = "showlocationonimage"
-            version = "0.0.13"
+            version = "0.0.14"
 //            pom.packaging = "jar"
 //            artifact("ShowLoctionOnImage/showlocationonimage")
             pom {
                 name.set("ShowLocationOnImage")
                 description.set("A library for showing location on image.")
                 url.set("https://github.com/pukkait/ShowLocationOnImage")
+            }
+            afterEvaluate {
+                from(components["release"])
             }
         }
         repositories {
