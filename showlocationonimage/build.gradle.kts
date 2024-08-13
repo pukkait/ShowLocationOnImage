@@ -83,7 +83,7 @@ publishing {
         register<MavenPublication>("release") {
             groupId = "com.pukkait"
             artifactId = "showlocationonimage"
-            version = "0.0.20"
+            version = "0.0.21"
 
             afterEvaluate {
                 from(components["release"])
