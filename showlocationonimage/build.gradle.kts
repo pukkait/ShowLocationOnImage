@@ -13,7 +13,7 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        minSdk = 24
+        minSdk = 23
         multiDexEnabled = true
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -83,7 +83,7 @@ publishing {
         register<MavenPublication>("release") {
             groupId = "com.pukkait"
             artifactId = "showlocationonimage"
-            version = "0.0.21"
+            version = "0.0.22"
 
             afterEvaluate {
                 from(components["release"])

@@ -20,5 +20,5 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "ShowLocationOnImage"
-include(":app")
+include(":sample")
 include(":showlocationonimage")
