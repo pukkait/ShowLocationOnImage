@@ -1,5 +1,6 @@
 plugins {
-    alias(libs.plugins.android.application)
+    id("com.android.library")
+//    alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     // gpt
 //    id("com.android.library")
@@ -12,11 +13,7 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.pukkait.showlocationonimage"
         minSdk = 24
-        targetSdk = 34
-        versionCode = 1
-        versionName = "0.0.18"
         multiDexEnabled = true
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -47,27 +44,27 @@ android {
             withJavadocJar()
         }
     }
-    configure<PublishingExtension> {
-        publications.create<MavenPublication>("showlocationonimage") {
-//            from(components["release"])
-            groupId = "com.pukkait"
-            artifactId = "showlocationonimage"
-            version = "0.0.18"
-//            pom.packaging = "jar"
-//            artifact("ShowLoctionOnImage/showlocationonimage")
-            pom {
-                name.set("ShowLocationOnImage")
-                description.set("A library for showing location on image.")
-                url.set("https://github.com/pukkait/ShowLocationOnImage")
-            }
-
-        }
-        repositories {
-            maven{
-                url = uri("https://jitpack.io")
-            }
-        }
-    }
+//    configure<PublishingExtension> {
+//        publications.create<MavenPublication>("showlocationonimage") {
+////            from(components["release"])
+//            groupId = "com.pukkait"
+//            artifactId = "showlocationonimage"
+//            version = "0.0.18"
+////            pom.packaging = "jar"
+////            artifact("ShowLoctionOnImage/showlocationonimage")
+//            pom {
+//                name.set("ShowLocationOnImage")
+//                description.set("A library for showing location on image.")
+//                url.set("https://github.com/pukkait/ShowLocationOnImage")
+//            }
+//
+//        }
+//        repositories {
+//            maven{
+//                url = uri("https://jitpack.io")
+//            }
+//        }
+//    }
 
 }
 
@@ -80,4 +77,17 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+}
+publishing {
+    publications {
+        register<MavenPublication>("release") {
+            groupId = "com.pukkait"
+            artifactId = "showlocationonimage"
+            version = "0.0.19"
+
+            afterEvaluate {
+                from(components["release"])
+            }
+        }
+    }
 }
