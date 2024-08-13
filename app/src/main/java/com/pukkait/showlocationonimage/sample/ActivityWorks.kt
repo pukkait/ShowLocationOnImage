@@ -1,4 +1,4 @@
-package com.pukkait.showlocationonimage
+package com.pukkait.showlocationonimage.sample
 
 import android.content.Context
 import android.widget.Toast

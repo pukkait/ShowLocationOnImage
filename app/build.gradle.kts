@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.pukkait.showlocationonimage"
+    namespace = "com.pukkait.showlocationonimage.sample"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.pukkait.showlocationonimage"
+        applicationId = "com.pukkait.showlocationonimage.sample"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
@@ -45,4 +45,6 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    implementation(project(mapOf("path" to ":showlocationonimage")))
+
 }
