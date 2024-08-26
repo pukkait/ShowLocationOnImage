@@ -1,0 +1,282 @@
+package com.pukkait.showlocationonimage.gallery
+/*
+ * MIT License
+ *
+ * Copyright (c) 2024 Pukka-it
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+import android.app.Activity
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.location.Geocoder
+import android.net.Uri
+import android.view.View
+import android.widget.Toast
+import com.pukkait.showlocationonimage.R
+import com.pukkait.showlocationonimage.geotag.FetchGeoLocation
+import com.pukkait.showlocationonimage.helper.HelperClass
+import com.pukkait.showlocationonimage.helper.HelperClass.getPreAuthorText
+import com.pukkait.showlocationonimage.helper.ImageManager
+import com.pukkait.showlocationonimage.helper.ImageManager.latitude
+import com.pukkait.showlocationonimage.helper.ImageManager.longitude
+import com.pukkait.showlocationonimage.helper.ImageManager.printList
+import com.pukkait.showlocationonimage.helper.ImageManager.showLatLong
+import com.pukkait.showlocationonimage.helper.ImageManager.textSize
+import com.pukkait.showlocationonimage.imageConditions.InputTypeSelected
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Collections
+import java.util.Date
+import java.util.Locale
+import java.util.UUID
+import kotlin.math.min
+
+
+class GalleryWrite(private val context: Activity) {
+
+    fun processCapturedImage(imageUri: Uri?) {
+        try {
+            if (imageUri == null) {
+                Toast.makeText(context, "File not found.!", Toast.LENGTH_SHORT).show()
+                return
+            }
+            createPrintListing()
+
+            val bitmap =
+                BitmapFactory.decodeStream(context.contentResolver.openInputStream(imageUri))
+            val mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
+            val canvas = Canvas(mutableBitmap)
+
+            textSize = calculateTextSize(canvas.width, canvas.height)
+
+            val textPaint = createTextPaint()
+            val backgroundPaint = createBackgroundPaint()
+
+            val padding = textSize.toInt()
+            val lineHeight = (textPaint.textSize * 1.5).toInt()
+            val textAreaHeight = calculateTotalTextHeight(
+                printList,
+                textPaint,
+                canvas.width,
+                padding
+            ) + (2 * padding)
+
+            drawBackground(canvas, backgroundPaint, canvas.width, canvas.height, textAreaHeight)
+            drawText(canvas, textPaint, padding, canvas.height, lineHeight)
+
+            drawAppName(canvas, textPaint)
+
+            saveImage(mutableBitmap)
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun createTextPaint(): Paint {
+        val textPaint = Paint()
+        textPaint.color = Color.WHITE
+        textPaint.textSize = textSize
+        textPaint.style = Paint.Style.FILL
+        textPaint.isAntiAlias = true
+        return textPaint
+    }
+
+    private fun createBackgroundPaint(): Paint {
+        val backgroundPaint = Paint()
+        backgroundPaint.color = Color.parseColor("#66000000")
+        backgroundPaint.style = Paint.Style.FILL
+        return backgroundPaint
+    }
+
+    private fun drawBackground(
+        canvas: Canvas,
+        backgroundPaint: Paint,
+        canvasWidth: Int,
+        canvasHeight: Int,
+        textAreaHeight: Int
+    ) {
+        canvas.drawRect(
+            0f,
+            (canvasHeight - textAreaHeight).toFloat(),
+            canvasWidth.toFloat(),
+            canvasHeight.toFloat(),
+            backgroundPaint
+        )
+    }
+
+    private fun drawText(
+        canvas: Canvas,
+        textPaint: Paint,
+        padding: Int,
+        canvasHeight: Int,
+        lineHeight: Int
+    ) {
+        var startY = canvasHeight - padding
+        for (line in wrapText(printList, textPaint, canvas.width, padding)) {
+            canvas.drawText(line!!, padding.toFloat(), startY.toFloat(), textPaint)
+            startY -= lineHeight
+        }
+    }
+
+    private fun drawAppName(canvas: Canvas, textPaint: Paint) {
+        val appName = ImageManager.printAppName
+        textPaint.textSize = textSize / 2
+        textPaint.color = context.getColor(R.color.teal_200)
+        val textY = (canvas.height - 20).toFloat()
+        canvas.drawText(
+            appName,
+            canvas.width - 10 - textPaint.measureText(appName),
+            textY,
+            textPaint
+        )
+    }
+
+    private fun wrapText(
+        textLines: List<String>,
+        paint: Paint,
+        maxWidth: Int,
+        padding: Int
+    ): ArrayList<String?> {
+        val wrappedLines = ArrayList<String?>()
+        for (line in textLines) {
+            val words = line.split(" ".toRegex()).dropLastWhile { it.isEmpty() }
+                .toTypedArray()
+            var currentLine = StringBuilder()
+            for (word in words) {
+                val testLine =
+                    currentLine.toString() + (if (currentLine.isEmpty()) "" else " ") + word
+                if (paint.measureText(testLine) <= maxWidth - 2 * padding) {
+                    currentLine.append((if (currentLine.isEmpty()) "" else " ") + word)
+                } else {
+                    if (currentLine.isNotEmpty()) {
+                        wrappedLines.add(currentLine.toString())
+                    }
+                    currentLine = StringBuilder(word)
+                }
+            }
+            if (currentLine.isNotEmpty()) {
+                wrappedLines.add(currentLine.toString())
+            }
+        }
+        wrappedLines.reverse()
+        return wrappedLines
+    }
+
+    private fun createPrintListing() {
+        printList.clear()
+        try {
+            if (showLatLong) {
+                val fetchGeoLocation = FetchGeoLocation(context)
+                latitude = fetchGeoLocation.getLatitude()
+                longitude = fetchGeoLocation.getLongitude()
+                addLocationToPrintList()
+                if (ImageManager.showLocationAddress) {
+                    val geoLocation = fetchGeoLocation.getGeocoderAddress(context)
+                    if (!geoLocation.isNullOrEmpty()) {
+                        addAddressToPrintList()
+                    }
+
+                }
+            }
+        } catch (e: Exception) {
+            Toast.makeText(context, "Allow all the permissions.", Toast.LENGTH_SHORT)
+                .show()
+        }
+        addDateToPrintList()
+        addAuthorNameToPrintList()
+    }
+
+    private fun addLocationToPrintList() {
+        printList.add("Latitude: $latitude Longitude: $longitude")
+    }
+
+    private fun addAddressToPrintList() {
+        val geocoder = FetchGeoLocation(context)
+        try {
+            val addresses = geocoder.getGeocoderAddress(context)
+            if (!addresses.isNullOrEmpty()) {
+                val address = addresses[0]
+                printList.add(address.locality + ", " + address.adminArea + ", " + address.countryName)
+                printList.add(address.getAddressLine(0))
+            }
+        } catch (ignored: Exception) {
+        }
+    }
+
+    private fun addDateToPrintList() {
+        val date = SimpleDateFormat("dd/MM/yyyy hh:mm a", Locale.ENGLISH).format(Date())
+        printList.add(date)
+    }
+
+    private fun addAuthorNameToPrintList() {
+        printList.add(
+            String.format(
+                "%s: %s",
+                getPreAuthorText(
+                    InputTypeSelected.GALLERY,
+                    ImageManager.prefixToAuthorNameGalleryChoice
+                ),
+                ImageManager.authorName
+            )
+        )
+    }
+
+    private fun saveImage(bitmap: Bitmap) {
+        val file = HelperClass.createImageFile(context)
+        try {
+            FileOutputStream(file).use { fos ->
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+        ImageManager.imagePath = file.absolutePath
+    }
+
+    private fun dpToPx(dp: Float): Float {
+        return dp * context.resources.displayMetrics.density
+    }
+
+
+    private fun calculateTotalTextHeight(
+        textLines: List<String>,
+        paint: Paint,
+        maxWidth: Int,
+        padding: Int
+    ): Int {
+        val lineHeight = (paint.textSize * 1.5).toInt()
+        var totalHeight = 0
+        val wrappedLines: List<String?> = wrapText(textLines, paint, maxWidth, padding)
+        totalHeight = wrappedLines.size * lineHeight
+        return totalHeight
+    }
+
+    private fun calculateTextSize(imageWidth: Int, imageHeight: Int): Float {
+        var textSize = (imageWidth / 40).toFloat()
+        textSize = min(textSize.toDouble(), (imageHeight / 20).toDouble()).toFloat()
+        return textSize
+    }
+}

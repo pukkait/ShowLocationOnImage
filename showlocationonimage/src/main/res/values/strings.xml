@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">ShowLocationOnImage</string>
+    <string name="settings">Setting</string>
+    <string name="GPSAlertDialogMessage">GPS is not enabled. Do you want to go to setting menu</string>
+    <string name="GPSAlertDialogTitle">GPS is setting</string>
+    <string name="runtime_permissions_txt">Permission Required</string>
+    <string name="compulsory_accept">To continue please accept required Permissions.\n App Info > Permissions > Allow all Permissions</string>
+    <string name="enable">Enable</string>
+    <string name="cancel">Cancel</string>
+
 </resources>
