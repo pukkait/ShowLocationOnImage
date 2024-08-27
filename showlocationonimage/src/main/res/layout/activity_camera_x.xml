@@ -67,6 +67,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="serif"
                 android:padding="2dp"
+                android:visibility="gone"
                 android:textColor="@color/white"
                 android:textSize="13dp" />
 
@@ -76,6 +77,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="serif"
                 android:padding="2dp"
+                android:visibility="gone"
                 android:textColor="@color/white"
                 android:textSize="13dp" />
 
@@ -86,6 +88,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="serif"
                 android:padding="2dp"
+                android:visibility="gone"
                 android:textColor="@color/white"
                 android:textSize="12dp" />
 

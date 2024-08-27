@@ -73,7 +73,7 @@ class GalleryWrite(private val context: Activity) {
             textSize = calculateTextSize(canvas.width, canvas.height)
 
             val textPaint = createTextPaint()
-            val backgroundPaint = createBackgroundPaint()
+            val backgroundPaint = HelperClass.createBackgroundPaint()
 
             val padding = textSize.toInt()
             val lineHeight = (textPaint.textSize * 1.5).toInt()
@@ -87,13 +87,77 @@ class GalleryWrite(private val context: Activity) {
             drawBackground(canvas, backgroundPaint, canvas.width, canvas.height, textAreaHeight)
             drawText(canvas, textPaint, padding, canvas.height, lineHeight)
 
-            drawAppName(canvas, textPaint)
+            drawAppNameAndLogo(
+                canvas,
+                textPaint,
+                backgroundPaint,
+                textAreaHeight,
+                ImageManager.appIcon
+            )
 
             saveImage(mutableBitmap)
         } catch (e: IOException) {
             e.printStackTrace()
         }
     }
+
+    private fun drawAppNameAndLogo(
+        canvas: Canvas,
+        textPaint: Paint,
+        backgroundPaint: Paint,
+        textAreaHeight: Int,
+        logoResId: Int?
+    ) {
+        val appName = ImageManager.printAppName
+        textPaint.textSize = textSize
+        textPaint.color = context.getColor(R.color.white)
+        textPaint.isAntiAlias = true
+
+        val textWidth = textPaint.measureText(appName)
+        val textHeight = textPaint.textSize
+        val padding = 10
+        var logoWidth = 0
+        var logoHeight = 0
+        var logoBitmap: Bitmap? = null
+
+        if (logoResId != null) {
+            logoBitmap = HelperClass.getValidDrawable(context, logoResId)
+            if (logoBitmap != null) {
+                logoHeight = textHeight.toInt()
+                logoWidth = (logoHeight * logoBitmap.width / logoBitmap.height)
+                logoBitmap = Bitmap.createScaledBitmap(logoBitmap, logoWidth, logoHeight, true)
+            } else {
+                Toast.makeText(context, "Invalid or unsupported logo resource.", Toast.LENGTH_SHORT)
+                    .show()
+            }
+        } else {
+            Toast.makeText(context, "Logo resource ID not provided.", Toast.LENGTH_SHORT).show()
+        }
+
+        // Calculate positions
+        val totalWidth = logoWidth + textWidth + padding
+        val appNameX = (canvas.width - totalWidth - padding).toFloat()
+        val appNameY = (canvas.height - textAreaHeight - padding).toFloat()
+
+        canvas.drawRect(
+            appNameX - padding,
+            appNameY - textHeight - padding,
+            appNameX + totalWidth + padding,
+            appNameY + padding,
+            backgroundPaint
+        )
+
+        if (logoBitmap != null) {
+            val logoX = appNameX
+            val logoY = appNameY - logoHeight
+            canvas.drawBitmap(logoBitmap, logoX, logoY, null)
+        }
+
+        // Draw the app name next to the logo
+        val textX = appNameX + logoWidth + padding
+        canvas.drawText(appName, textX, appNameY, textPaint)
+    }
+
 
     private fun createTextPaint(): Paint {
         val textPaint = Paint()
@@ -104,12 +168,6 @@ class GalleryWrite(private val context: Activity) {
         return textPaint
     }
 
-    private fun createBackgroundPaint(): Paint {
-        val backgroundPaint = Paint()
-        backgroundPaint.color = Color.parseColor("#66000000")
-        backgroundPaint.style = Paint.Style.FILL
-        return backgroundPaint
-    }
 
     private fun drawBackground(
         canvas: Canvas,
@@ -139,19 +197,6 @@ class GalleryWrite(private val context: Activity) {
             canvas.drawText(line!!, padding.toFloat(), startY.toFloat(), textPaint)
             startY -= lineHeight
         }
-    }
-
-    private fun drawAppName(canvas: Canvas, textPaint: Paint) {
-        val appName = ImageManager.printAppName
-        textPaint.textSize = textSize / 2
-        textPaint.color = context.getColor(R.color.teal_200)
-        val textY = (canvas.height - 20).toFloat()
-        canvas.drawText(
-            appName,
-            canvas.width - 10 - textPaint.measureText(appName),
-            textY,
-            textPaint
-        )
     }
 
     private fun wrapText(
@@ -188,60 +233,64 @@ class GalleryWrite(private val context: Activity) {
     private fun createPrintListing() {
         printList.clear()
         try {
-            if (showLatLong) {
+            if (showLatLong || ImageManager.showLocationAddress) {
                 val fetchGeoLocation = FetchGeoLocation(context)
                 latitude = fetchGeoLocation.getLatitude()
                 longitude = fetchGeoLocation.getLongitude()
                 addLocationToPrintList()
-                if (ImageManager.showLocationAddress) {
-                    val geoLocation = fetchGeoLocation.getGeocoderAddress(context)
-                    if (!geoLocation.isNullOrEmpty()) {
-                        addAddressToPrintList()
-                    }
+                addAddressToPrintList(fetchGeoLocation)
 
-                }
             }
         } catch (e: Exception) {
             Toast.makeText(context, "Allow all the permissions.", Toast.LENGTH_SHORT)
                 .show()
         }
         addDateToPrintList()
+
         addAuthorNameToPrintList()
+
     }
 
     private fun addLocationToPrintList() {
-        printList.add("Latitude: $latitude Longitude: $longitude")
+        if (showLatLong) {
+            printList.add("Latitude: $latitude Longitude: $longitude")
+        }
     }
 
-    private fun addAddressToPrintList() {
-        val geocoder = FetchGeoLocation(context)
-        try {
-            val addresses = geocoder.getGeocoderAddress(context)
-            if (!addresses.isNullOrEmpty()) {
-                val address = addresses[0]
-                printList.add(address.locality + ", " + address.adminArea + ", " + address.countryName)
-                printList.add(address.getAddressLine(0))
+    private fun addAddressToPrintList(geocoder: FetchGeoLocation) {
+        if (ImageManager.showLocationAddress) {
+
+            try {
+                val addresses = geocoder.getGeocoderAddress(context)
+                if (!addresses.isNullOrEmpty()) {
+                    val address = addresses[0]
+                    printList.add(address.locality + ", " + address.adminArea + ", " + address.countryName)
+                    printList.add(address.getAddressLine(0))
+                }
+            } catch (ignored: Exception) {
             }
-        } catch (ignored: Exception) {
         }
     }
 
     private fun addDateToPrintList() {
-        val date = SimpleDateFormat("dd/MM/yyyy hh:mm a", Locale.ENGLISH).format(Date())
-        printList.add(date)
+        if (ImageManager.showDateTime) {
+            printList.add(HelperClass.showCurrentDateTime())
+        }
     }
 
     private fun addAuthorNameToPrintList() {
-        printList.add(
-            String.format(
-                "%s: %s",
-                getPreAuthorText(
-                    InputTypeSelected.GALLERY,
-                    ImageManager.prefixToAuthorNameGalleryChoice
-                ),
-                ImageManager.authorName
+        if (ImageManager.showAuthor) {
+            printList.add(
+                String.format(
+                    "%s: %s",
+                    getPreAuthorText(
+                        InputTypeSelected.GALLERY,
+                        ImageManager.prefixToAuthorNameGalleryChoice
+                    ),
+                    ImageManager.authorName
+                )
             )
-        )
+        }
     }
 
     private fun saveImage(bitmap: Bitmap) {

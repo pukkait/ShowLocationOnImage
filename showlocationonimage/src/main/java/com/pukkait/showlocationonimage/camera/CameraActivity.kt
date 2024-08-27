@@ -83,7 +83,7 @@ class CameraActivity : ComponentActivity() {
         }
         if (showAppIcon) {
             imgHeader.visibility = View.VISIBLE
-            imgHeader.setImageResource(ImageManager.appIcon)
+            imgHeader.setImageResource(ImageManager.appIcon!!)
         } else {
             imgHeader.visibility = View.GONE
         }
@@ -93,15 +93,24 @@ class CameraActivity : ComponentActivity() {
         } else {
             txtHeader.visibility = View.GONE
         }
-        txtAuthor.text = String.format(
-            "%s: %s",
-            getPreAuthorText(InputTypeSelected.CAMERA, ImageManager.prefixToAuthorNameCameraChoice),
-            ImageManager.authorName
-        )
+        if (ImageManager.showAuthor) {
+            txtAuthor.text = String.format(
+                "%s: %s",
+                getPreAuthorText(
+                    InputTypeSelected.CAMERA,
+                    ImageManager.prefixToAuthorNameCameraChoice
+                ),
+                ImageManager.authorName
+            )
+            txtAuthor.visibility = View.VISIBLE
+        } else {
+            txtAuthor.visibility = View.GONE
+        }
+
 
         if (showDateTime) {
             txtTime.visibility = View.VISIBLE
-            txtTime.text = HelperClass.addDateToPrintList()
+            txtTime.text = HelperClass.showCurrentDateTime()
         } else {
             txtTime.visibility = View.GONE
         }
@@ -113,29 +122,33 @@ class CameraActivity : ComponentActivity() {
         val txtState = findViewById<TextView>(R.id.txt_state)
         val txtAddress = findViewById<TextView>(R.id.txt_address)
         try {
-            if (showLatLong) {
+            if (showLatLong || ImageManager.showLocationAddress) {
                 val fetchGeoLocation = FetchGeoLocation(this@CameraActivity)
                 ImageManager.latitude = fetchGeoLocation.getLatitude()
                 ImageManager.longitude = fetchGeoLocation.getLongitude()
-                txtLatLong.visibility = View.VISIBLE
-                txtLatLong.text = String.format(
-                    "Latitude: %.4f, Longitude: %.4f",
-                    ImageManager.latitude,
-                    ImageManager.longitude
-                )
-                val geoLocation = fetchGeoLocation.getGeocoderAddress(this@CameraActivity)
-                if (!geoLocation.isNullOrEmpty()) {
-                    val address = geoLocation[0]
-                    txtAddress.text = address.getAddressLine(0)
-                    txtState.text = String.format(
-                        "%s, %s, %s",
-                        address.locality,
-                        address.adminArea,
-                        address.countryName
+                if (showLatLong) {
+                    txtLatLong.visibility = View.VISIBLE
+                    txtLatLong.text = String.format(
+                        "Latitude: %.4f, Longitude: %.4f",
+                        ImageManager.latitude,
+                        ImageManager.longitude
                     )
+                } else {
+                    txtLatLong.visibility = View.GONE
                 }
 
                 if (ImageManager.showLocationAddress) {
+                    val geoLocation = fetchGeoLocation.getGeocoderAddress(this@CameraActivity)
+                    if (!geoLocation.isNullOrEmpty()) {
+                        val address = geoLocation[0]
+                        txtAddress.text = address.getAddressLine(0)
+                        txtState.text = String.format(
+                            "%s, %s, %s",
+                            address.locality,
+                            address.adminArea,
+                            address.countryName
+                        )
+                    }
                     txtAddress.visibility = View.VISIBLE
                     txtState.visibility = View.VISIBLE
                 } else {
@@ -143,6 +156,7 @@ class CameraActivity : ComponentActivity() {
                     txtState.visibility = View.GONE
                 }
             }
+
         } catch (e: Exception) {
             Toast.makeText(this@CameraActivity, "Allow all the permissions.", Toast.LENGTH_SHORT)
                 .show()
@@ -180,7 +194,7 @@ class CameraActivity : ComponentActivity() {
 
     private fun captureImage() {
         try {
-            val photoFile =         File(getOutputDirectory(), "${System.currentTimeMillis()}.jpg")
+            val photoFile = File(getOutputDirectory(), "${System.currentTimeMillis()}.jpg")
 
             val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 

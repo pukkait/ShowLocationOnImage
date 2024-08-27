@@ -57,6 +57,7 @@ object ImageManager {
     internal var showLocationAddress = false
     internal var showLatLong = false
     internal var showDateTime = false
+    internal var showAuthor = true
     internal var showDataToBottom = false
     internal var flashLightEnabled = false//To be implemented
 
@@ -64,13 +65,13 @@ object ImageManager {
     internal var file: File? = null
     internal var imageExtensions: String = ImageExtensions.PNG
 
-    internal var appIcon = 0
+    internal var appIcon: Int? = null
     internal var latitude = 0.0
     internal var longitude = 0.0
     internal val printList = ArrayList<String>()
 
 
-    fun showAppIcon(showAppIcon: Boolean, appIcon: Int) {
+    fun showAppIcon(showAppIcon: Boolean, appIcon: Int?) {
         this.showAppIcon = showAppIcon
         this.appIcon = appIcon
     }
@@ -82,6 +83,9 @@ object ImageManager {
 
     fun showDate(showDateTime: Boolean) {
         this.showDateTime = showDateTime
+    }
+    fun showAuthor(showAuthor: Boolean) {
+        this.showAuthor = showAuthor
     }
 
     fun showLatLong(showLatLong: Boolean) {
