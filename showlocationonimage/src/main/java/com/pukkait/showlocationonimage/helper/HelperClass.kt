@@ -14,6 +14,7 @@ import android.net.Uri
 import android.provider.Settings
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.content.res.AppCompatResources
 import com.pukkait.showlocationonimage.R
 import java.io.File
 import java.text.SimpleDateFormat
@@ -80,9 +81,7 @@ object HelperClass {
 
     internal fun getValidDrawable(context: Context, resId: Int): Bitmap? {
         return try {
-            val drawable = context.getDrawable(resId)
-
-            when (drawable) {
+            when (val drawable = AppCompatResources.getDrawable(context, resId)) {
                 is BitmapDrawable -> {
                     // It's a BitmapDrawable, extract the bitmap directly
                     drawable.bitmap
@@ -125,6 +124,13 @@ object HelperClass {
         return backgroundPaint
     }
 
+    fun getImageExtension(imageExtensions: String): Bitmap.CompressFormat {
+        return when (imageExtensions) {
+            "png" -> Bitmap.CompressFormat.PNG
+            "jpg", "jpeg" -> Bitmap.CompressFormat.JPEG
+            else -> Bitmap.CompressFormat.JPEG
+        }
+    }
 
 
 }

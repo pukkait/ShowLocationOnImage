@@ -26,23 +26,14 @@ import android.app.AlertDialog
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.Typeface
 import android.net.Uri
-import android.os.Environment
 import android.provider.MediaStore
 import androidx.activity.result.ActivityResultLauncher
-import androidx.core.content.FileProvider
 import com.pukkait.showlocationonimage.camera.CameraActivity
 import com.pukkait.showlocationonimage.gallery.GalleryWrite
 import com.pukkait.showlocationonimage.geotag.FetchGeoLocation
 import com.pukkait.showlocationonimage.imageConditions.ImageExtensions
 import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
 
 object ImageManager {
     internal var textSize = 0f
@@ -145,7 +136,7 @@ object ImageManager {
                     listener,
                 )
 
-                1 -> pickImageFromGallery(context, activityResultLauncher, listener)
+                1 -> pickImageFromGallery( activityResultLauncher, listener)
                 2 -> dialog.dismiss()
             }
         }
@@ -153,7 +144,6 @@ object ImageManager {
     }
 
     private fun pickImageFromGallery(
-        context: Context,
         activityResultLauncher: ActivityResultLauncher<Intent>,
         listener: ImageResultListener,
     ) {

@@ -29,9 +29,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.location.Geocoder
 import android.net.Uri
-import android.view.View
 import android.widget.Toast
 import com.pukkait.showlocationonimage.R
 import com.pukkait.showlocationonimage.geotag.FetchGeoLocation
@@ -44,14 +42,8 @@ import com.pukkait.showlocationonimage.helper.ImageManager.printList
 import com.pukkait.showlocationonimage.helper.ImageManager.showLatLong
 import com.pukkait.showlocationonimage.helper.ImageManager.textSize
 import com.pukkait.showlocationonimage.imageConditions.InputTypeSelected
-import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.text.SimpleDateFormat
-import java.util.Collections
-import java.util.Date
-import java.util.Locale
-import java.util.UUID
 import kotlin.math.min
 
 
@@ -297,7 +289,7 @@ class GalleryWrite(private val context: Activity) {
         val file = HelperClass.createImageFile(context)
         try {
             FileOutputStream(file).use { fos ->
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+                bitmap.compress(HelperClass.getImageExtension(ImageManager.imageExtensions), 100, fos)
             }
         } catch (e: IOException) {
             e.printStackTrace()

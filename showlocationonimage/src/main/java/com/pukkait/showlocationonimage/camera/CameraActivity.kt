@@ -1,12 +1,15 @@
 package com.pukkait.showlocationonimage.camera
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.*
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.Surface
 import android.view.View
+import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -194,7 +197,7 @@ class CameraActivity : ComponentActivity() {
 
     private fun captureImage() {
         try {
-            val photoFile = File(getOutputDirectory(), "${System.currentTimeMillis()}.jpg")
+            val photoFile = File(getOutputDirectory(), "${System.currentTimeMillis()}.${ImageManager.imageExtensions}")
 
             val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
@@ -230,7 +233,7 @@ class CameraActivity : ComponentActivity() {
         val overlayBitmap = getBitmapFromView(overlayView)
 
         // Calculate scaling factors based on the dimensions
-        val scalingFactor = calculateScalingFactor(previewView, mutableBitmap)
+//        val scalingFactor = calculateScalingFactor(previewView, mutableBitmap)
 
         // Scale the overlay bitmap to fit the final image
 //        val scaledOverlayBitmap = Bitmap.createScaledBitmap(overlayBitmap,
@@ -318,8 +321,20 @@ class CameraActivity : ComponentActivity() {
     }
 
     private fun getRotationDegrees(): Int {
+        // Get the WindowManager instance
+        val windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+
         // Get the device's current rotation
-        val rotation = windowManager.defaultDisplay.rotation
+        val rotation = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val display = display
+            display?.rotation ?: Surface.ROTATION_0
+        } else {
+            @Suppress("DEPRECATION")
+            val display = windowManager.defaultDisplay
+            display.rotation
+        }
+
+        // Return the corresponding rotation degrees
         return when (rotation) {
             Surface.ROTATION_0 -> 0
             Surface.ROTATION_90 -> 90
