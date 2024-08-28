@@ -19,21 +19,17 @@ import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import com.pukkait.showlocationonimage.R
 import com.pukkait.showlocationonimage.geotag.FetchGeoLocation
 import com.pukkait.showlocationonimage.helper.HelperClass
 import com.pukkait.showlocationonimage.helper.HelperClass.getPreAuthorText
-import com.pukkait.showlocationonimage.helper.ImageManager
-import com.pukkait.showlocationonimage.helper.ImageManager.showAppIcon
-import com.pukkait.showlocationonimage.helper.ImageManager.showAppName
-import com.pukkait.showlocationonimage.helper.ImageManager.showDateTime
-import com.pukkait.showlocationonimage.helper.ImageManager.showLatLong
+import com.pukkait.showlocationonimage.helper.ShowLocationOnImage
 import com.pukkait.showlocationonimage.imageConditions.InputTypeSelected
 import java.io.File
 import java.io.FileOutputStream
 import java.util.concurrent.Executor
 import kotlin.math.min
-
 
 class CameraActivity : ComponentActivity() {
 
@@ -43,7 +39,6 @@ class CameraActivity : ComponentActivity() {
     private lateinit var overlayView: View
     private var isFrontCamera: Boolean = false
     private lateinit var cameraExecutor: Executor
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_camera_x)
@@ -79,31 +74,31 @@ class CameraActivity : ComponentActivity() {
         val txtAuthor = findViewById<TextView>(R.id.txt_author)
         val txtTime = findViewById<TextView>(R.id.txt_time)
 
-        if (showAppIcon && showAppName) {
+        if (ShowLocationOnImage.showAppIcon && ShowLocationOnImage.showAppName) {
             lnrHeader.visibility = View.VISIBLE
         } else {
             lnrHeader.visibility = View.GONE
         }
-        if (showAppIcon) {
+        if (ShowLocationOnImage.showAppIcon) {
             imgHeader.visibility = View.VISIBLE
-            imgHeader.setImageResource(ImageManager.appIcon!!)
+            imgHeader.setImageResource(ShowLocationOnImage.appIcon!!)
         } else {
             imgHeader.visibility = View.GONE
         }
-        if (showAppName) {
+        if (ShowLocationOnImage.showAppName) {
             txtHeader.visibility = View.VISIBLE
-            txtHeader.text = ImageManager.printAppName
+            txtHeader.text = ShowLocationOnImage.printAppName
         } else {
             txtHeader.visibility = View.GONE
         }
-        if (ImageManager.showAuthor) {
+        if (ShowLocationOnImage.showAuthor) {
             txtAuthor.text = String.format(
                 "%s: %s",
                 getPreAuthorText(
                     InputTypeSelected.CAMERA,
-                    ImageManager.prefixToAuthorNameCameraChoice
+                    ShowLocationOnImage.prefixToAuthorNameCameraChoice
                 ),
-                ImageManager.authorName
+                ShowLocationOnImage.authorName
             )
             txtAuthor.visibility = View.VISIBLE
         } else {
@@ -111,7 +106,7 @@ class CameraActivity : ComponentActivity() {
         }
 
 
-        if (showDateTime) {
+        if (ShowLocationOnImage.showDateTime) {
             txtTime.visibility = View.VISIBLE
             txtTime.text = HelperClass.showCurrentDateTime()
         } else {
@@ -125,22 +120,22 @@ class CameraActivity : ComponentActivity() {
         val txtState = findViewById<TextView>(R.id.txt_state)
         val txtAddress = findViewById<TextView>(R.id.txt_address)
         try {
-            if (showLatLong || ImageManager.showLocationAddress) {
+            if (ShowLocationOnImage.showLatLong || ShowLocationOnImage.showLocationAddress) {
                 val fetchGeoLocation = FetchGeoLocation(this@CameraActivity)
-                ImageManager.latitude = fetchGeoLocation.getLatitude()
-                ImageManager.longitude = fetchGeoLocation.getLongitude()
-                if (showLatLong) {
+                ShowLocationOnImage.latitude = fetchGeoLocation.getLatitude()
+                ShowLocationOnImage.longitude = fetchGeoLocation.getLongitude()
+                if (ShowLocationOnImage.showLatLong) {
                     txtLatLong.visibility = View.VISIBLE
                     txtLatLong.text = String.format(
                         "Latitude: %.4f, Longitude: %.4f",
-                        ImageManager.latitude,
-                        ImageManager.longitude
+                        ShowLocationOnImage.latitude,
+                        ShowLocationOnImage.longitude
                     )
                 } else {
                     txtLatLong.visibility = View.GONE
                 }
 
-                if (ImageManager.showLocationAddress) {
+                if (ShowLocationOnImage.showLocationAddress) {
                     val geoLocation = fetchGeoLocation.getGeocoderAddress(this@CameraActivity)
                     if (!geoLocation.isNullOrEmpty()) {
                         val address = geoLocation[0]
@@ -197,7 +192,10 @@ class CameraActivity : ComponentActivity() {
 
     private fun captureImage() {
         try {
-            val photoFile = File(getOutputDirectory(), "${System.currentTimeMillis()}.${ImageManager.imageExtensions}")
+            val photoFile = File(
+                getOutputDirectory(),
+                "${System.currentTimeMillis()}.${ShowLocationOnImage.imageExtensions}"
+            )
 
             val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 

@@ -20,7 +20,8 @@
         android:maxSdkVersion="32"
         tools:ignore="ScopedStorage" />
 
-    <application>
+    <application
+        >
         <activity android:name=".camera.CameraActivity" />
 <!--        <provider-->
 <!--            android:name="androidx.core.content.FileProvider"-->

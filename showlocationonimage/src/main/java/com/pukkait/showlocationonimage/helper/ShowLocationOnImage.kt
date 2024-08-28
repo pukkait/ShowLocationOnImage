@@ -35,89 +35,93 @@ import com.pukkait.showlocationonimage.geotag.FetchGeoLocation
 import com.pukkait.showlocationonimage.imageConditions.ImageExtensions
 import java.io.File
 
-object ImageManager {
-    internal var textSize = 0f
-    internal var printAppName = ""
-    internal var authorName = ""
-    internal var prefixToAuthorNameCameraChoice = ""
-    internal var prefixToAuthorNameGalleryChoice = ""
-    internal var imagePath = ""
 
-    internal var showAppIcon = false
-    internal var showAppName = false
-    internal var showLocationAddress = false
-    internal var showLatLong = false
-    internal var showDateTime = false
-    internal var showAuthor = true
-    internal var showDataToBottom = false
-    internal var flashLightEnabled = false//To be implemented
+class ShowLocationOnImage {
+companion object{
+
+    internal var textSize: Float = 0f
+    internal var printAppName: String = ""
+    internal var authorName: String = ""
+    internal var prefixToAuthorNameCameraChoice: String = ""
+    internal var prefixToAuthorNameGalleryChoice: String = ""
+    internal var imagePath: String = ""
+
+    internal var showAppIcon: Boolean = false
+    internal var showAppName: Boolean = false
+    internal var showLocationAddress: Boolean = false
+    internal var showLatLong: Boolean = false
+    internal var showDateTime: Boolean = false
+    internal var showAuthor: Boolean = true
+    internal var showDataToBottom: Boolean = false
+    internal var flashLightEnabled: Boolean = false // To be implemented
 
     internal var imageUri: Uri? = null
     internal var file: File? = null
     internal var imageExtensions: String = ImageExtensions.PNG
 
     internal var appIcon: Int? = null
-    internal var latitude = 0.0
-    internal var longitude = 0.0
+    internal var latitude: Double = 0.0
+    internal var longitude: Double = 0.0
     internal val printList = ArrayList<String>()
 
-
+}
     fun showAppIcon(showAppIcon: Boolean, appIcon: Int?) {
-        this.showAppIcon = showAppIcon
-        this.appIcon = appIcon
+        ShowLocationOnImage.showAppIcon = showAppIcon
+        ShowLocationOnImage.appIcon = appIcon
     }
 
     fun showAppName(appName: Boolean, printAppName: String) {
-        this.showAppName = appName
-        this.printAppName = printAppName
+        ShowLocationOnImage.showAppName = appName
+        ShowLocationOnImage.printAppName = printAppName
     }
 
     fun showDate(showDateTime: Boolean) {
-        this.showDateTime = showDateTime
+        ShowLocationOnImage.showDateTime = showDateTime
     }
+
     fun showAuthor(showAuthor: Boolean) {
-        this.showAuthor = showAuthor
+        ShowLocationOnImage.showAuthor = showAuthor
     }
 
     fun showLatLong(showLatLong: Boolean) {
-        this.showLatLong = showLatLong
+        ShowLocationOnImage.showLatLong = showLatLong
     }
 
     fun showLocationAddress(showLocationAddress: Boolean) {
-        this.showLocationAddress = showLocationAddress
+        ShowLocationOnImage.showLocationAddress = showLocationAddress
     }
 
     fun showDataToBottom(showDataToBottom: Boolean) {
-        this.showDataToBottom = showDataToBottom
+        ShowLocationOnImage.showDataToBottom = showDataToBottom
     }
 
     fun setAuthorName(name: String) {
-        this.authorName = name
+        ShowLocationOnImage.authorName = name
     }
 
     fun setPrefixToAuthorNameCamera(prefixToAuthorName: String) {
-        this.prefixToAuthorNameCameraChoice = prefixToAuthorName
+        ShowLocationOnImage.prefixToAuthorNameCameraChoice = prefixToAuthorName
     }
 
     fun setPrefixToAuthorNameGallery(prefixToAuthorName: String) {
-        this.prefixToAuthorNameGalleryChoice = prefixToAuthorName
+        ShowLocationOnImage.prefixToAuthorNameGalleryChoice = prefixToAuthorName
     }
 
     fun setImagePath(imageUri: Uri) {
-        this.imageUri = imageUri
+        ShowLocationOnImage.imageUri = imageUri
     }
 
-//    fun setFlashLightEnabled(flashLightEnabled: Boolean) {
-//        this.flashLightEnabled = flashLightEnabled
-//    }
+    // fun setFlashLightEnabled(flashLightEnabled: Boolean) {
+    //     ShowLocationOnImage.flashLightEnabled = flashLightEnabled
+    // }
 
     fun setImageExtensions(imageExtensions: String) {
-        this.imageExtensions = imageExtensions
+        ShowLocationOnImage.imageExtensions = imageExtensions
     }
 
-
     private var resultListener: ImageResultListener? = null
-    private var actionCode = 0
+    private var actionCode: Int = 0
+
     fun showImageSourceDialog(
         context: Context,
         activityResultLauncher: ActivityResultLauncher<Intent>,
@@ -130,13 +134,8 @@ object ImageManager {
         builder.setTitle("Select Image Source")
         builder.setItems(options) { dialog, which ->
             when (which) {
-                0 -> captureImageFromCamera(
-                    context,
-                    activityResultLauncher,
-                    listener,
-                )
-
-                1 -> pickImageFromGallery( activityResultLauncher, listener)
+                0 -> captureImageFromCamera(context, activityResultLauncher, listener)
+                1 -> pickImageFromGallery(activityResultLauncher, listener)
                 2 -> dialog.dismiss()
             }
         }
@@ -158,10 +157,7 @@ object ImageManager {
         listener: ImageResultListener,
     ) {
         this.resultListener = listener
-        val customCameraIntent = Intent(
-            context,
-            CameraActivity::class.java
-        )
+        val customCameraIntent = Intent(context, CameraActivity::class.java)
         activityResultLauncher.launch(customCameraIntent)
     }
 
@@ -193,6 +189,5 @@ object ImageManager {
             resultListener?.onError("Image selection failed.", actionCode)
         }
     }
-
-
 }
+

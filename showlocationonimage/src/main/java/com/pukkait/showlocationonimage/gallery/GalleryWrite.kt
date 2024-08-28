@@ -35,19 +35,15 @@ import com.pukkait.showlocationonimage.R
 import com.pukkait.showlocationonimage.geotag.FetchGeoLocation
 import com.pukkait.showlocationonimage.helper.HelperClass
 import com.pukkait.showlocationonimage.helper.HelperClass.getPreAuthorText
-import com.pukkait.showlocationonimage.helper.ImageManager
-import com.pukkait.showlocationonimage.helper.ImageManager.latitude
-import com.pukkait.showlocationonimage.helper.ImageManager.longitude
-import com.pukkait.showlocationonimage.helper.ImageManager.printList
-import com.pukkait.showlocationonimage.helper.ImageManager.showLatLong
-import com.pukkait.showlocationonimage.helper.ImageManager.textSize
+import com.pukkait.showlocationonimage.helper.ShowLocationOnImage
 import com.pukkait.showlocationonimage.imageConditions.InputTypeSelected
 import java.io.FileOutputStream
 import java.io.IOException
 import kotlin.math.min
 
-
-class GalleryWrite(private val context: Activity) {
+class GalleryWrite(
+    private val context: Activity,
+) {
 
     fun processCapturedImage(imageUri: Uri?) {
         try {
@@ -62,7 +58,7 @@ class GalleryWrite(private val context: Activity) {
             val mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
             val canvas = Canvas(mutableBitmap)
 
-            textSize = calculateTextSize(canvas.width, canvas.height)
+            val textSize = calculateTextSize(canvas.width, canvas.height)
 
             val textPaint = createTextPaint()
             val backgroundPaint = HelperClass.createBackgroundPaint()
@@ -70,7 +66,7 @@ class GalleryWrite(private val context: Activity) {
             val padding = textSize.toInt()
             val lineHeight = (textPaint.textSize * 1.5).toInt()
             val textAreaHeight = calculateTotalTextHeight(
-                printList,
+                ShowLocationOnImage.printList,
                 textPaint,
                 canvas.width,
                 padding
@@ -84,7 +80,7 @@ class GalleryWrite(private val context: Activity) {
                 textPaint,
                 backgroundPaint,
                 textAreaHeight,
-                ImageManager.appIcon
+                ShowLocationOnImage.appIcon
             )
 
             saveImage(mutableBitmap)
@@ -100,8 +96,8 @@ class GalleryWrite(private val context: Activity) {
         textAreaHeight: Int,
         logoResId: Int?
     ) {
-        val appName = ImageManager.printAppName
-        textPaint.textSize = textSize
+        val appName = ShowLocationOnImage.printAppName
+        textPaint.textSize = calculateTextSize(canvas.width, canvas.height)
         textPaint.color = context.getColor(R.color.white)
         textPaint.isAntiAlias = true
 
@@ -150,16 +146,17 @@ class GalleryWrite(private val context: Activity) {
         canvas.drawText(appName, textX, appNameY, textPaint)
     }
 
-
     private fun createTextPaint(): Paint {
         val textPaint = Paint()
         textPaint.color = Color.WHITE
-        textPaint.textSize = textSize
+        textPaint.textSize = calculateTextSize(
+            context.resources.displayMetrics.widthPixels,
+            context.resources.displayMetrics.heightPixels
+        )
         textPaint.style = Paint.Style.FILL
         textPaint.isAntiAlias = true
         return textPaint
     }
-
 
     private fun drawBackground(
         canvas: Canvas,
@@ -185,7 +182,7 @@ class GalleryWrite(private val context: Activity) {
         lineHeight: Int
     ) {
         var startY = canvasHeight - padding
-        for (line in wrapText(printList, textPaint, canvas.width, padding)) {
+        for (line in wrapText(ShowLocationOnImage.printList, textPaint, canvas.width, padding)) {
             canvas.drawText(line!!, padding.toFloat(), startY.toFloat(), textPaint)
             startY -= lineHeight
         }
@@ -223,12 +220,12 @@ class GalleryWrite(private val context: Activity) {
     }
 
     private fun createPrintListing() {
-        printList.clear()
+        ShowLocationOnImage.printList.clear()
         try {
-            if (showLatLong || ImageManager.showLocationAddress) {
+            if (ShowLocationOnImage.showLatLong || ShowLocationOnImage.showLocationAddress) {
                 val fetchGeoLocation = FetchGeoLocation(context)
-                latitude = fetchGeoLocation.getLatitude()
-                longitude = fetchGeoLocation.getLongitude()
+                ShowLocationOnImage.latitude = fetchGeoLocation.getLatitude()
+                ShowLocationOnImage.longitude = fetchGeoLocation.getLongitude()
                 addLocationToPrintList()
                 addAddressToPrintList(fetchGeoLocation)
 
@@ -238,26 +235,24 @@ class GalleryWrite(private val context: Activity) {
                 .show()
         }
         addDateToPrintList()
-
         addAuthorNameToPrintList()
-
     }
 
     private fun addLocationToPrintList() {
-        if (showLatLong) {
-            printList.add("Latitude: $latitude Longitude: $longitude")
+        if (ShowLocationOnImage.showLatLong) {
+            ShowLocationOnImage.printList.add("Latitude: ${ShowLocationOnImage.latitude} Longitude: ${ShowLocationOnImage.longitude}")
         }
     }
 
     private fun addAddressToPrintList(geocoder: FetchGeoLocation) {
-        if (ImageManager.showLocationAddress) {
+        if (ShowLocationOnImage.showLocationAddress) {
 
             try {
                 val addresses = geocoder.getGeocoderAddress(context)
                 if (!addresses.isNullOrEmpty()) {
                     val address = addresses[0]
-                    printList.add(address.locality + ", " + address.adminArea + ", " + address.countryName)
-                    printList.add(address.getAddressLine(0))
+                    ShowLocationOnImage.printList.add(address.locality + ", " + address.adminArea + ", " + address.countryName)
+                    ShowLocationOnImage.printList.add(address.getAddressLine(0))
                 }
             } catch (ignored: Exception) {
             }
@@ -265,21 +260,21 @@ class GalleryWrite(private val context: Activity) {
     }
 
     private fun addDateToPrintList() {
-        if (ImageManager.showDateTime) {
-            printList.add(HelperClass.showCurrentDateTime())
+        if (ShowLocationOnImage.showDateTime) {
+            ShowLocationOnImage.printList.add(HelperClass.showCurrentDateTime())
         }
     }
 
     private fun addAuthorNameToPrintList() {
-        if (ImageManager.showAuthor) {
-            printList.add(
+        if (ShowLocationOnImage.showAuthor) {
+            ShowLocationOnImage.printList.add(
                 String.format(
                     "%s: %s",
                     getPreAuthorText(
                         InputTypeSelected.GALLERY,
-                        ImageManager.prefixToAuthorNameGalleryChoice
+                        ShowLocationOnImage.prefixToAuthorNameGalleryChoice
                     ),
-                    ImageManager.authorName
+                    ShowLocationOnImage.authorName
                 )
             )
         }
@@ -289,18 +284,21 @@ class GalleryWrite(private val context: Activity) {
         val file = HelperClass.createImageFile(context)
         try {
             FileOutputStream(file).use { fos ->
-                bitmap.compress(HelperClass.getImageExtension(ImageManager.imageExtensions), 100, fos)
+                bitmap.compress(
+                    HelperClass.getImageExtension(ShowLocationOnImage.imageExtensions),
+                    100,
+                    fos
+                )
             }
         } catch (e: IOException) {
             e.printStackTrace()
         }
-        ImageManager.imagePath = file.absolutePath
+        ShowLocationOnImage.imagePath = file.absolutePath
     }
 
     private fun dpToPx(dp: Float): Float {
         return dp * context.resources.displayMetrics.density
     }
-
 
     private fun calculateTotalTextHeight(
         textLines: List<String>,
