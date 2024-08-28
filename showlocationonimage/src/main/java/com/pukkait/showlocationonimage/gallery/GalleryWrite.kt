@@ -97,13 +97,13 @@ class GalleryWrite(
         logoResId: Int?
     ) {
         val appName = ShowLocationOnImage.printAppName
-        textPaint.textSize = calculateTextSize(canvas.width, canvas.height)
-        textPaint.color = context.getColor(R.color.white)
-        textPaint.isAntiAlias = true
+//        textPaint.textSize = calculateTextSize(canvas.width, canvas.height) / 2
+//        textPaint.color = context.getColor(R.color.white)
+//        textPaint.isAntiAlias = true
 
         val textWidth = textPaint.measureText(appName)
         val textHeight = textPaint.textSize
-        val padding = 10
+        val padding = textPaint.textSize.toInt()/2
         var logoWidth = 0
         var logoHeight = 0
         var logoBitmap: Bitmap? = null
@@ -111,10 +111,17 @@ class GalleryWrite(
         if (logoResId != null) {
             logoBitmap = HelperClass.getValidDrawable(context, logoResId)
             if (logoBitmap != null) {
-                logoHeight = textHeight.toInt()
+//                logoHeight = textHeight.toInt()
+                val logoSize = textPaint.textSize.toInt()
+                logoWidth = logoSize
+                logoHeight = logoSize
+
 //                logoWidth = (logoHeight * logoBitmap.width / logoBitmap.height)
 
-                logoBitmap = Bitmap.createScaledBitmap(logoBitmap, logoHeight, logoHeight, true)
+                logoBitmap = Bitmap.createScaledBitmap(
+                    logoBitmap,
+                    logoSize/2, logoSize/2, true
+                )
             } else {
                 Toast.makeText(context, "Invalid or unsupported logo resource.", Toast.LENGTH_SHORT)
                     .show()
@@ -137,9 +144,8 @@ class GalleryWrite(
         )
 
         if (logoBitmap != null) {
-            val logoX = appNameX
-            val logoY = appNameY - logoHeight
-            canvas.drawBitmap(logoBitmap, logoX, logoY, null)
+            val logoY = (appNameY - logoHeight)
+            canvas.drawBitmap(logoBitmap, appNameX-(padding/2), logoY, null)
         }
 
         // Draw the app name next to the logo
@@ -315,7 +321,7 @@ class GalleryWrite(
     }
 
     private fun calculateTextSize(imageWidth: Int, imageHeight: Int): Float {
-        var textSize = (imageWidth / 40).toFloat()
+        var textSize = (imageWidth / 20).toFloat()
         textSize = min(textSize.toDouble(), (imageHeight / 20).toDouble()).toFloat()
         return textSize
     }

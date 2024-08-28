@@ -48,11 +48,11 @@ companion object{
 
     internal var showAppIcon: Boolean = false
     internal var showAppName: Boolean = false
-    internal var showLocationAddress: Boolean = false
-    internal var showLatLong: Boolean = false
-    internal var showDateTime: Boolean = false
+    internal var showLocationAddress: Boolean = true
+    internal var showLatLong: Boolean = true
+    internal var showDateTime: Boolean = true
     internal var showAuthor: Boolean = true
-    internal var showDataToBottom: Boolean = false
+    internal var showDataToBottom: Boolean = true
     internal var flashLightEnabled: Boolean = false // To be implemented
 
     internal var imageUri: Uri? = null
