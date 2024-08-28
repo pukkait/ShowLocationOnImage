@@ -37,34 +37,35 @@ import java.io.File
 
 
 class ShowLocationOnImage {
-companion object{
+    companion object {
 
-    internal var textSize: Float = 0f
-    internal var printAppName: String = ""
-    internal var authorName: String = ""
-    internal var prefixToAuthorNameCameraChoice: String = ""
-    internal var prefixToAuthorNameGalleryChoice: String = ""
-    internal var imagePath: String = ""
+        internal var textSize: Float = 0f
+        internal var printAppName: String = ""
+        internal var authorName: String = ""
+        internal var prefixToAuthorNameCameraChoice: String = ""
+        internal var prefixToAuthorNameGalleryChoice: String = ""
+        internal var imagePath: String = ""
 
-    internal var showAppIcon: Boolean = false
-    internal var showAppName: Boolean = false
-    internal var showLocationAddress: Boolean = true
-    internal var showLatLong: Boolean = true
-    internal var showDateTime: Boolean = true
-    internal var showAuthor: Boolean = true
-    internal var showDataToBottom: Boolean = true
-    internal var flashLightEnabled: Boolean = false // To be implemented
+        internal var showAppIcon: Boolean = false
+        internal var showAppName: Boolean = false
+        internal var showLocationAddress: Boolean = true
+        internal var showLatLong: Boolean = true
+        internal var showDateTime: Boolean = true
+        internal var showAuthor: Boolean = true
+        internal var showDataToBottom: Boolean = true
+        internal var flashLightEnabled: Boolean = false // To be implemented
 
-    internal var imageUri: Uri? = null
-    internal var file: File? = null
-    internal var imageExtensions: String = ImageExtensions.PNG
+        internal var imageUri: Uri? = null
+        internal var file: File? = null
+        internal var imageExtensions: String = ImageExtensions.PNG
 
-    internal var appIcon: Int? = null
-    internal var latitude: Double = 0.0
-    internal var longitude: Double = 0.0
-    internal val printList = ArrayList<String>()
+        internal var appIcon: Int? = null
+        internal var latitude: Double = 0.0
+        internal var longitude: Double = 0.0
+        internal val printList = ArrayList<String>()
 
-}
+    }
+
     fun showAppIcon(showAppIcon: Boolean, appIcon: Int?) {
         ShowLocationOnImage.showAppIcon = showAppIcon
         ShowLocationOnImage.appIcon = appIcon
@@ -134,7 +135,7 @@ companion object{
         builder.setTitle("Select Image Source")
         builder.setItems(options) { dialog, which ->
             when (which) {
-                0 -> captureImageFromCamera(context, activityResultLauncher, listener)
+                0 -> captureImageFromCamera(context, activityResultLauncher, listener, actionCode)
                 1 -> pickImageFromGallery(activityResultLauncher, listener)
                 2 -> dialog.dismiss()
             }
@@ -155,7 +156,9 @@ companion object{
         context: Context,
         activityResultLauncher: ActivityResultLauncher<Intent>,
         listener: ImageResultListener,
+        actionCode: Int
     ) {
+        this.actionCode = actionCode
         this.resultListener = listener
         val customCameraIntent = Intent(context, CameraActivity::class.java)
         activityResultLauncher.launch(customCameraIntent)
