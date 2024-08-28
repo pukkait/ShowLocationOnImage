@@ -112,9 +112,9 @@ class GalleryWrite(
             logoBitmap = HelperClass.getValidDrawable(context, logoResId)
             if (logoBitmap != null) {
                 logoHeight = textHeight.toInt()
-                logoWidth = (logoHeight * logoBitmap.width / logoBitmap.height)
+//                logoWidth = (logoHeight * logoBitmap.width / logoBitmap.height)
 
-                logoBitmap = Bitmap.createScaledBitmap(logoBitmap, logoWidth, logoWidth, true)
+                logoBitmap = Bitmap.createScaledBitmap(logoBitmap, logoHeight, logoHeight, true)
             } else {
                 Toast.makeText(context, "Invalid or unsupported logo resource.", Toast.LENGTH_SHORT)
                     .show()

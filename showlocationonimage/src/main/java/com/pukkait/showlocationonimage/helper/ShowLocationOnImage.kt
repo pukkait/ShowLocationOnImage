@@ -151,7 +151,7 @@ companion object{
         activityResultLauncher.launch(galleryIntent)
     }
 
-    private fun captureImageFromCamera(
+    fun captureImageFromCamera(
         context: Context,
         activityResultLauncher: ActivityResultLauncher<Intent>,
         listener: ImageResultListener,
