@@ -72,7 +72,7 @@ class ShowLocationOnImage {
     }
 
     fun showAppName(appName: Boolean, printAppName: String) {
-        ShowLocationOnImage.showAppName = appName
+        showAppName = appName
         ShowLocationOnImage.printAppName = printAppName
     }
 
@@ -97,19 +97,23 @@ class ShowLocationOnImage {
     }
 
     fun setAuthorName(name: String) {
-        ShowLocationOnImage.authorName = name
+        authorName = name
     }
 
     fun setPrefixToAuthorNameCamera(prefixToAuthorName: String) {
-        ShowLocationOnImage.prefixToAuthorNameCameraChoice = prefixToAuthorName
+        prefixToAuthorNameCameraChoice = prefixToAuthorName
     }
 
     fun setPrefixToAuthorNameGallery(prefixToAuthorName: String) {
-        ShowLocationOnImage.prefixToAuthorNameGalleryChoice = prefixToAuthorName
+        prefixToAuthorNameGalleryChoice = prefixToAuthorName
     }
 
     fun setImagePath(imageUri: Uri) {
         ShowLocationOnImage.imageUri = imageUri
+    }
+
+    fun setTextSize(size: Float) {
+        textSize = size
     }
 
     // fun setFlashLightEnabled(flashLightEnabled: Boolean) {

@@ -2,24 +2,33 @@ package com.pukkait.showlocationonimage.camera
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Matrix
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.Surface
 import android.view.View
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.camera.core.*
+import androidx.camera.core.AspectRatio
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
-import androidx.core.content.FileProvider
 import com.pukkait.showlocationonimage.R
 import com.pukkait.showlocationonimage.geotag.FetchGeoLocation
 import com.pukkait.showlocationonimage.helper.HelperClass
@@ -30,6 +39,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.util.concurrent.Executor
 import kotlin.math.min
+
 
 class CameraActivity : ComponentActivity() {
 
@@ -73,6 +83,19 @@ class CameraActivity : ComponentActivity() {
         val imgHeader = findViewById<ImageView>(R.id.img_header)
         val txtAuthor = findViewById<TextView>(R.id.txt_author)
         val txtTime = findViewById<TextView>(R.id.txt_time)
+        val lnrBottom = findViewById<LinearLayout>(R.id.lnr_bottom)
+        val params = RelativeLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
+        val headerParams = RelativeLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+        headerParams.addRule(RelativeLayout.ALIGN_PARENT_END)
+        if (ShowLocationOnImage.showDataToBottom) {
+            params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
+            headerParams.addRule(RelativeLayout.ABOVE, R.id.lnr_bottom)
+        } else {
+            params.addRule(RelativeLayout.ALIGN_PARENT_TOP)
+            headerParams.addRule(RelativeLayout.BELOW, R.id.lnr_bottom)
+        }
+        lnrBottom.layoutParams = params
+        lnrHeader.layoutParams = headerParams
 
         if (ShowLocationOnImage.showAppIcon && ShowLocationOnImage.showAppName) {
             lnrHeader.visibility = View.VISIBLE

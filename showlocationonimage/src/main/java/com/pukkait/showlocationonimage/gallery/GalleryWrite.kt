@@ -63,7 +63,7 @@ class GalleryWrite(
             val textPaint = createTextPaint()
             val backgroundPaint = HelperClass.createBackgroundPaint()
 
-            val padding = textSize.toInt()
+            val padding = textSize.toInt() / 2
             val lineHeight = (textPaint.textSize * 1.5).toInt()
             val textAreaHeight = calculateTotalTextHeight(
                 ShowLocationOnImage.printList,
@@ -72,15 +72,29 @@ class GalleryWrite(
                 padding
             ) + (2 * padding)
 
-            drawBackground(canvas, backgroundPaint, canvas.width, canvas.height, textAreaHeight)
-            drawText(canvas, textPaint, padding, canvas.height, lineHeight)
+            drawBackground(
+                canvas,
+                backgroundPaint,
+                canvas.width,
+                canvas.height,
+                textAreaHeight,
+                ShowLocationOnImage.showDataToBottom
+            )
+            drawText(
+                canvas,
+                textPaint,
+                padding,
+                canvas.height,
+                lineHeight,
+                ShowLocationOnImage.showDataToBottom
+            )
 
             drawAppNameAndLogo(
                 canvas,
                 textPaint,
                 backgroundPaint,
                 textAreaHeight,
-                ShowLocationOnImage.appIcon
+                ShowLocationOnImage.appIcon, ShowLocationOnImage.showDataToBottom
             )
 
             saveImage(mutableBitmap)
@@ -94,16 +108,14 @@ class GalleryWrite(
         textPaint: Paint,
         backgroundPaint: Paint,
         textAreaHeight: Int,
-        logoResId: Int?
+        logoResId: Int?,
+        drawAtTop: Boolean
     ) {
         val appName = ShowLocationOnImage.printAppName
-//        textPaint.textSize = calculateTextSize(canvas.width, canvas.height) / 2
-//        textPaint.color = context.getColor(R.color.white)
-//        textPaint.isAntiAlias = true
 
         val textWidth = textPaint.measureText(appName)
         val textHeight = textPaint.textSize
-        val padding = textPaint.textSize.toInt()/2
+        val padding = textPaint.textSize.toInt() / 2
         var logoWidth = 0
         var logoHeight = 0
         var logoBitmap: Bitmap? = null
@@ -111,16 +123,13 @@ class GalleryWrite(
         if (logoResId != null) {
             logoBitmap = HelperClass.getValidDrawable(context, logoResId)
             if (logoBitmap != null) {
-//                logoHeight = textHeight.toInt()
                 val logoSize = textPaint.textSize.toInt()
                 logoWidth = logoSize
                 logoHeight = logoSize
 
-//                logoWidth = (logoHeight * logoBitmap.width / logoBitmap.height)
-
                 logoBitmap = Bitmap.createScaledBitmap(
                     logoBitmap,
-                    logoSize/2, logoSize/2, true
+                    logoSize / 2, logoSize / 2, true
                 )
             } else {
                 Toast.makeText(context, "Invalid or unsupported logo resource.", Toast.LENGTH_SHORT)
@@ -133,7 +142,11 @@ class GalleryWrite(
         // Calculate positions
         val totalWidth = logoWidth + textWidth + padding
         val appNameX = (canvas.width - totalWidth - padding).toFloat()
-        val appNameY = (canvas.height - textAreaHeight - padding).toFloat()
+        val appNameY = if (drawAtTop) {
+            (canvas.height - textAreaHeight - padding).toFloat()
+        } else {
+            (textAreaHeight + textHeight + padding).toFloat()
+        }
 
         canvas.drawRect(
             appNameX - padding,
@@ -145,7 +158,7 @@ class GalleryWrite(
 
         if (logoBitmap != null) {
             val logoY = (appNameY - logoHeight)
-            canvas.drawBitmap(logoBitmap, appNameX-(padding/2), logoY, null)
+            canvas.drawBitmap(logoBitmap, appNameX - (padding / 2), logoY, null)
         }
 
         // Draw the app name next to the logo
@@ -170,15 +183,27 @@ class GalleryWrite(
         backgroundPaint: Paint,
         canvasWidth: Int,
         canvasHeight: Int,
-        textAreaHeight: Int
+        textAreaHeight: Int,
+        drawAtTop: Boolean
     ) {
-        canvas.drawRect(
-            0f,
-            (canvasHeight - textAreaHeight).toFloat(),
-            canvasWidth.toFloat(),
-            canvasHeight.toFloat(),
-            backgroundPaint
-        )
+        if (drawAtTop) {
+            canvas.drawRect(
+                0f,
+                (canvasHeight - textAreaHeight).toFloat(),
+                canvasWidth.toFloat(),
+                canvasHeight.toFloat(),
+                backgroundPaint
+            )
+        } else {
+            canvas.drawRect(
+                0f,
+                0f,
+                canvasWidth.toFloat(),
+                textAreaHeight.toFloat(),
+                backgroundPaint
+            )
+
+        }
     }
 
     private fun drawText(
@@ -186,12 +211,24 @@ class GalleryWrite(
         textPaint: Paint,
         padding: Int,
         canvasHeight: Int,
-        lineHeight: Int
+        lineHeight: Int,
+        drawAtTop: Boolean
     ) {
-        var startY = canvasHeight - padding
-        for (line in wrapText(ShowLocationOnImage.printList, textPaint, canvas.width, padding)) {
-            canvas.drawText(line!!, padding.toFloat(), startY.toFloat(), textPaint)
-            startY -= lineHeight
+        val startY = if (drawAtTop) canvasHeight - padding else padding + lineHeight
+
+        val lines = wrapText(ShowLocationOnImage.printList, textPaint, canvas.width, padding)
+        if (drawAtTop) {
+            var currentY = startY
+            for (line in lines.reversed()) {
+                canvas.drawText(line!!, padding.toFloat(), currentY.toFloat(), textPaint)
+                currentY -= lineHeight
+            }
+        } else {
+            var currentY = startY
+            for (line in lines) {
+                canvas.drawText(line!!, padding.toFloat(), currentY.toFloat(), textPaint)
+                currentY += lineHeight
+            }
         }
     }
 
@@ -222,7 +259,7 @@ class GalleryWrite(
                 wrappedLines.add(currentLine.toString())
             }
         }
-        wrappedLines.reverse()
+//        wrappedLines.reverse()
         return wrappedLines
     }
 
@@ -321,8 +358,12 @@ class GalleryWrite(
     }
 
     private fun calculateTextSize(imageWidth: Int, imageHeight: Int): Float {
-        var textSize = (imageWidth / 20).toFloat()
-        textSize = min(textSize.toDouble(), (imageHeight / 20).toDouble()).toFloat()
-        return textSize
+        if (ShowLocationOnImage.textSize != 0f) {
+            return ShowLocationOnImage.textSize
+        } else {
+            var textSize = (imageWidth / 20).toFloat()
+            textSize = min(textSize.toDouble(), (imageHeight / 20).toDouble()).toFloat()
+            return textSize
+        }
     }
 }
