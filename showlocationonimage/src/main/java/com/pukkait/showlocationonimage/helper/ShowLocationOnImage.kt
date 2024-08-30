@@ -140,18 +140,20 @@ class ShowLocationOnImage {
         builder.setItems(options) { dialog, which ->
             when (which) {
                 0 -> captureImageFromCamera(context, activityResultLauncher, listener, actionCode)
-                1 -> pickImageFromGallery(activityResultLauncher, listener)
+                1 -> pickImageFromGallery(activityResultLauncher, listener, actionCode)
                 2 -> dialog.dismiss()
             }
         }
         builder.show()
     }
 
-    private fun pickImageFromGallery(
+    fun pickImageFromGallery(
         activityResultLauncher: ActivityResultLauncher<Intent>,
         listener: ImageResultListener,
+        actionCode: Int
     ) {
-        resultListener = listener
+        this.actionCode = actionCode
+        this.resultListener = listener
         val galleryIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
         activityResultLauncher.launch(galleryIntent)
     }
