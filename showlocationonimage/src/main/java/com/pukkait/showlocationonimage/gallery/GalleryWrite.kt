@@ -57,20 +57,9 @@ class GalleryWrite(
             val bitmap =
                 BitmapFactory.decodeStream(context.contentResolver.openInputStream(imageUri))
 
-//            val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-//                textSize = 50f
-//                color = android.graphics.Color.WHITE
-//                textAlign = Paint.Align.CENTER
-//            }
-//            canvas.drawText("Sample Text", (bitmap.width / 2).toFloat(), textY, paint)
-//            val mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
-//            val canvas = Canvas(mutableBitmap)
-
-//            val textSize = calculateTextSize(canvas.width, canvas.height)
-//
             val textPaint = createTextPaint(bitmap)
             val backgroundPaint = HelperClass.createBackgroundPaint()
-//
+
             val padding = 50f / 2
             val lineHeight = (textPaint.textSize * 1.5).toInt()
             val textAreaHeight = calculateTotalTextHeight(
@@ -79,38 +68,72 @@ class GalleryWrite(
                 bitmap.width,
                 padding.roundToInt()
             ) + (2 * padding)
-            val resultBitmap =
-                Bitmap.createBitmap(
-                    bitmap.width,
-                    (bitmap.height + textAreaHeight).roundToInt(), Bitmap.Config.ARGB_8888
-                )
-            val canvas = Canvas(resultBitmap)
-            val textY = (bitmap.height + textAreaHeight).toFloat()
-            canvas.drawBitmap(bitmap, null, Rect(0, 0, bitmap.width, bitmap.height), null)
 
-            drawBackground(
-                canvas,
-                backgroundPaint,
-                canvas.width,
-                canvas.height,
-                textAreaHeight.roundToInt(),
-                ShowLocationOnImage.showDataToBottom
+            val resultBitmap = Bitmap.createBitmap(
+                bitmap.width,
+                when (ShowLocationOnImage.showDataToBottom) {
+                    false -> bitmap.height + textAreaHeight
+                    true -> bitmap.height + textAreaHeight
+//                    TextPosition.BOTH -> bitmap.height + 2 * textAreaHeight
+                }.roundToInt(),
+                Bitmap.Config.ARGB_8888
             )
-            drawText(
-                canvas,
-                textPaint,
-                padding.roundToInt(),
-                canvas.height,
-                lineHeight,
-                ShowLocationOnImage.showDataToBottom
-            )
-//
+            val canvas = Canvas(resultBitmap)
+
+            when (ShowLocationOnImage.showDataToBottom) {
+                false -> {
+                    // Draw the text background
+                    drawBackground(
+                        canvas,
+                        backgroundPaint,
+                        canvas.width,
+                        canvas.height,
+                        textAreaHeight.roundToInt(),
+                        true
+                    )
+                    // Draw the text
+                    drawText(
+                        canvas,
+                        textPaint,
+                        padding.roundToInt(),
+                        canvas.height,
+                        lineHeight,
+                        true
+                    )
+                    // Draw the image below the text
+                    canvas.drawBitmap(bitmap, null, Rect(0, textAreaHeight.roundToInt(), bitmap.width, bitmap.height + textAreaHeight.roundToInt()), null)
+                }
+                true -> {
+                    // Draw the image first
+                    canvas.drawBitmap(bitmap, null, Rect(0, 0, bitmap.width, bitmap.height), null)
+                    // Draw the text background
+                    drawBackground(
+                        canvas,
+                        backgroundPaint,
+                        canvas.width,
+                        canvas.height,
+                        textAreaHeight.roundToInt(),
+                        false
+                    )
+                    // Draw the text
+                    drawText(
+                        canvas,
+                        textPaint,
+                        padding.roundToInt(),
+                        canvas.height,
+                        lineHeight,
+                        false
+                    )
+                }
+
+            }
+
             drawAppNameAndLogo(
                 canvas,
                 textPaint,
                 backgroundPaint,
                 textAreaHeight.roundToInt(),
-                ShowLocationOnImage.appIcon, ShowLocationOnImage.showDataToBottom
+                ShowLocationOnImage.appIcon,
             )
 
             saveImage(resultBitmap)
@@ -118,7 +141,6 @@ class GalleryWrite(
             e.printStackTrace()
         }
     }
-
     fun processCapturedImage(imageUri: Uri?) {
         try {
             if (imageUri == null) {
@@ -168,7 +190,7 @@ class GalleryWrite(
                 textPaint,
                 backgroundPaint,
                 textAreaHeight,
-                ShowLocationOnImage.appIcon, ShowLocationOnImage.showDataToBottom
+                ShowLocationOnImage.appIcon
             )
 
             saveImage(mutableBitmap)
@@ -183,7 +205,6 @@ class GalleryWrite(
         backgroundPaint: Paint,
         textAreaHeight: Int,
         logoResId: Int?,
-        drawAtTop: Boolean
     ) {
         val appName = ShowLocationOnImage.printAppName
 
@@ -216,10 +237,11 @@ class GalleryWrite(
         // Calculate positions
         val totalWidth = logoWidth + textWidth + padding
         val appNameX = (canvas.width - totalWidth - padding).toFloat()
-        val appNameY = if (drawAtTop) {
+        val appNameY = if (ShowLocationOnImage.showDataToBottom) {
             (canvas.height - textAreaHeight - padding).toFloat()
         } else {
             (textAreaHeight + textHeight + padding).toFloat()
+
         }
 
         canvas.drawRect(
@@ -239,6 +261,7 @@ class GalleryWrite(
         val textX = appNameX + logoWidth + padding
         canvas.drawText(appName, textX, appNameY, textPaint)
     }
+
 
     private fun createTextPaint(bitmap: Bitmap): Paint {
         val textPaint = Paint()
@@ -265,20 +288,19 @@ class GalleryWrite(
         if (drawAtTop) {
             canvas.drawRect(
                 0f,
-                (canvasHeight - textAreaHeight).toFloat(),
-                canvasWidth.toFloat(),
-                canvasHeight.toFloat(),
-                backgroundPaint
-            )
-        } else {
-            canvas.drawRect(
-                0f,
                 0f,
                 canvasWidth.toFloat(),
                 textAreaHeight.toFloat(),
                 backgroundPaint
             )
-
+        } else {
+            canvas.drawRect(
+                0f,
+                canvasHeight - textAreaHeight.toFloat(),
+                canvasWidth.toFloat(),
+                canvasHeight.toFloat(),
+                backgroundPaint
+            )
         }
     }
 
@@ -290,24 +312,23 @@ class GalleryWrite(
         lineHeight: Int,
         drawAtTop: Boolean
     ) {
-        val startY = if (drawAtTop) canvasHeight - padding else padding + lineHeight
+        val startY = if (drawAtTop) padding + lineHeight else canvasHeight - padding
 
         val lines = wrapText(ShowLocationOnImage.printList, textPaint, canvas.width, padding)
         if (drawAtTop) {
-            var currentY = startY
-            for (line in lines.reversed()) {
-                canvas.drawText(line!!, padding.toFloat(), currentY.toFloat(), textPaint)
-                currentY -= lineHeight
-            }
-        } else {
             var currentY = startY
             for (line in lines) {
                 canvas.drawText(line!!, padding.toFloat(), currentY.toFloat(), textPaint)
                 currentY += lineHeight
             }
+        } else {
+            var currentY = startY
+            for (line in lines.reversed()) {
+                canvas.drawText(line!!, padding.toFloat(), currentY.toFloat(), textPaint)
+                currentY -= lineHeight
+            }
         }
     }
-
     private fun wrapText(
         textLines: List<String>,
         paint: Paint,
