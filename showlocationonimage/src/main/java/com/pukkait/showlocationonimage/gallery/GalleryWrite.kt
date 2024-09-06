@@ -29,9 +29,10 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Rect
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
-import com.pukkait.showlocationonimage.R
 import com.pukkait.showlocationonimage.geotag.FetchGeoLocation
 import com.pukkait.showlocationonimage.helper.HelperClass
 import com.pukkait.showlocationonimage.helper.HelperClass.getPreAuthorText
@@ -39,11 +40,84 @@ import com.pukkait.showlocationonimage.helper.ShowLocationOnImage
 import com.pukkait.showlocationonimage.imageConditions.InputTypeSelected
 import java.io.FileOutputStream
 import java.io.IOException
-import kotlin.math.min
+import kotlin.math.roundToInt
 
 class GalleryWrite(
     private val context: Activity,
 ) {
+
+    fun writeBelowImage(imageUri: Uri?) {
+        try {
+            if (imageUri == null) {
+                Toast.makeText(context, "File not found.!", Toast.LENGTH_SHORT).show()
+                return
+            }
+            createPrintListing()
+
+            val bitmap =
+                BitmapFactory.decodeStream(context.contentResolver.openInputStream(imageUri))
+
+//            val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+//                textSize = 50f
+//                color = android.graphics.Color.WHITE
+//                textAlign = Paint.Align.CENTER
+//            }
+//            canvas.drawText("Sample Text", (bitmap.width / 2).toFloat(), textY, paint)
+//            val mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
+//            val canvas = Canvas(mutableBitmap)
+
+//            val textSize = calculateTextSize(canvas.width, canvas.height)
+//
+            val textPaint = createTextPaint(bitmap)
+            val backgroundPaint = HelperClass.createBackgroundPaint()
+//
+            val padding = 50f / 2
+            val lineHeight = (textPaint.textSize * 1.5).toInt()
+            val textAreaHeight = calculateTotalTextHeight(
+                ShowLocationOnImage.printList,
+                textPaint,
+                bitmap.width,
+                padding.roundToInt()
+            ) + (2 * padding)
+            val resultBitmap =
+                Bitmap.createBitmap(
+                    bitmap.width,
+                    (bitmap.height + textAreaHeight).roundToInt(), Bitmap.Config.ARGB_8888
+                )
+            val canvas = Canvas(resultBitmap)
+            val textY = (bitmap.height + textAreaHeight).toFloat()
+            canvas.drawBitmap(bitmap, null, Rect(0, 0, bitmap.width, bitmap.height), null)
+
+            drawBackground(
+                canvas,
+                backgroundPaint,
+                canvas.width,
+                canvas.height,
+                textAreaHeight.roundToInt(),
+                ShowLocationOnImage.showDataToBottom
+            )
+            drawText(
+                canvas,
+                textPaint,
+                padding.roundToInt(),
+                canvas.height,
+                lineHeight,
+                ShowLocationOnImage.showDataToBottom
+            )
+//
+            drawAppNameAndLogo(
+                canvas,
+                textPaint,
+                backgroundPaint,
+                textAreaHeight.roundToInt(),
+                ShowLocationOnImage.appIcon, ShowLocationOnImage.showDataToBottom
+            )
+
+            saveImage(resultBitmap)
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
 
     fun processCapturedImage(imageUri: Uri?) {
         try {
@@ -60,7 +134,7 @@ class GalleryWrite(
 
             val textSize = calculateTextSize(canvas.width, canvas.height)
 
-            val textPaint = createTextPaint()
+            val textPaint = createTextPaint(bitmap)
             val backgroundPaint = HelperClass.createBackgroundPaint()
 
             val padding = textSize.toInt() / 2
@@ -166,12 +240,14 @@ class GalleryWrite(
         canvas.drawText(appName, textX, appNameY, textPaint)
     }
 
-    private fun createTextPaint(): Paint {
+    private fun createTextPaint(bitmap: Bitmap): Paint {
         val textPaint = Paint()
         textPaint.color = Color.WHITE
         textPaint.textSize = calculateTextSize(
-            context.resources.displayMetrics.widthPixels,
-            context.resources.displayMetrics.heightPixels
+            bitmap.width,
+            bitmap.height
+//            context.resources.displayMetrics.widthPixels,
+//            context.resources.displayMetrics.heightPixels
         )
         textPaint.style = Paint.Style.FILL
         textPaint.isAntiAlias = true
@@ -357,12 +433,34 @@ class GalleryWrite(
         return totalHeight
     }
 
+    //    private fun calculateTextSize(imageWidth: Int, imageHeight: Int): Float {
+//        if (ShowLocationOnImage.textSize != 0f) {
+//            return ShowLocationOnImage.textSize
+//        } else {
+//            var textSize = (imageWidth / 20).toFloat()
+//            textSize = min(textSize.toDouble(), (imageHeight / 20).toDouble()).toFloat()
+//            return textSize
+//        }
+//    }
     private fun calculateTextSize(imageWidth: Int, imageHeight: Int): Float {
         if (ShowLocationOnImage.textSize != 0f) {
             return ShowLocationOnImage.textSize
         } else {
-            var textSize = (imageWidth / 20).toFloat()
-            textSize = min(textSize.toDouble(), (imageHeight / 20).toDouble()).toFloat()
+            // Determine if the image is horizontal or vertical
+            val isHorizontal = imageWidth > imageHeight
+//            Log.d("imageWidth", imageWidth.toString())
+//            Log.d("imageHeight", imageHeight.toString())
+//            Log.d("isHorizontal", isHorizontal.toString())
+            val textSize: Float = if (isHorizontal) {
+                // Calculate text size for horizontal rectangles
+                val maxTextSizeBasedOnHeight = imageHeight / 20f
+                maxTextSizeBasedOnHeight
+            } else {
+                // Calculate text size for vertical rectangles
+                val maxTextSizeBasedOnWidth = imageWidth / 30f
+                maxTextSizeBasedOnWidth
+            }
+
             return textSize
         }
     }

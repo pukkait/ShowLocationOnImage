@@ -20,17 +20,11 @@
         android:maxSdkVersion="32"
         tools:ignore="ScopedStorage" />
 
-    <application
-        >
+    <application>
+        <activity
+            android:name=".gallery.CropActivity"
+            android:exported="false" />
         <activity android:name=".camera.CameraActivity" />
-<!--        <provider-->
-<!--            android:name="androidx.core.content.FileProvider"-->
-<!--            android:authorities="${applicationId}.provider"-->
-<!--            android:exported="false"-->
-<!--            android:grantUriPermissions="true">-->
-<!--            <meta-data-->
-<!--                android:name="android.support.FILE_PROVIDER_PATHS"-->
-<!--                android:resource="@xml/file_paths" />-->
-<!--        </provider>-->
     </application>
+
 </manifest>

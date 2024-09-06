@@ -26,14 +26,23 @@ import android.app.AlertDialog
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Rect
 import android.net.Uri
+import android.os.Environment
 import android.provider.MediaStore
+import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import com.pukkait.showlocationonimage.camera.CameraActivity
 import com.pukkait.showlocationonimage.gallery.GalleryWrite
 import com.pukkait.showlocationonimage.geotag.FetchGeoLocation
 import com.pukkait.showlocationonimage.imageConditions.ImageExtensions
 import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 
 
 class ShowLocationOnImage {
@@ -46,6 +55,7 @@ class ShowLocationOnImage {
         internal var prefixToAuthorNameGalleryChoice: String = ""
         internal var imagePath: String = ""
 
+        internal var writeBelowImage: Boolean = true
         internal var showAppIcon: Boolean = false
         internal var showAppName: Boolean = false
         internal var showLocationAddress: Boolean = true
@@ -60,6 +70,7 @@ class ShowLocationOnImage {
         internal var imageExtensions: String = ImageExtensions.PNG
 
         internal var appIcon: Int? = null
+        internal var isCameraSelected: Boolean = false
         internal var latitude: Double = 0.0
         internal var longitude: Double = 0.0
         internal val printList = ArrayList<String>()
@@ -98,6 +109,10 @@ class ShowLocationOnImage {
 
     fun setAuthorName(name: String) {
         authorName = name
+    }
+
+    fun writeBelowImage(isWriteBelowImage: Boolean) {
+        writeBelowImage = isWriteBelowImage
     }
 
     fun setPrefixToAuthorNameCamera(prefixToAuthorName: String) {
@@ -140,20 +155,21 @@ class ShowLocationOnImage {
         builder.setItems(options) { dialog, which ->
             when (which) {
                 0 -> captureImageFromCamera(context, activityResultLauncher, listener, actionCode)
-                1 -> pickImageFromGallery(activityResultLauncher, listener,actionCode)
+                1 -> pickImageFromGallery(activityResultLauncher, listener, actionCode)
                 2 -> dialog.dismiss()
             }
         }
         builder.show()
     }
 
-     fun pickImageFromGallery(
+    fun pickImageFromGallery(
         activityResultLauncher: ActivityResultLauncher<Intent>,
         listener: ImageResultListener,
         actionCode: Int
     ) {
-         this.actionCode = actionCode
-         this.resultListener = listener
+        this.actionCode = actionCode
+        this.resultListener = listener
+        isCameraSelected = false
         val galleryIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
         activityResultLauncher.launch(galleryIntent)
     }
@@ -166,6 +182,7 @@ class ShowLocationOnImage {
     ) {
         this.actionCode = actionCode
         this.resultListener = listener
+        isCameraSelected = true
         val customCameraIntent = Intent(context, CameraActivity::class.java)
         activityResultLauncher.launch(customCameraIntent)
     }
@@ -185,8 +202,16 @@ class ShowLocationOnImage {
                     latitude = fetchGeoLocation.getLatitude()
                     longitude = fetchGeoLocation.getLongitude()
                     imagePath = imagePathSel
-                    val galleryWrite = GalleryWrite(context)
-                    galleryWrite.processCapturedImage(imageUri)
+//                    processImage(context, imagePath)
+//                    createImageWithText(File(imagePath), printAppName)
+                    if (!isCameraSelected) {
+                        val galleryWrite = GalleryWrite(context)
+                        if (writeBelowImage) {
+                            galleryWrite.writeBelowImage(imageUri)
+                        } else {
+                            galleryWrite.processCapturedImage(imageUri)
+                        }
+                    }
                     resultListener?.onImageProcessed(imagePath, actionCode)
                 } else {
                     resultListener?.onError("Failed to process image.", actionCode)
