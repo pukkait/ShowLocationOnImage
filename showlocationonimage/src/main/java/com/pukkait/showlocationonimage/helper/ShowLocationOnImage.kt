@@ -24,6 +24,8 @@ package com.pukkait.showlocationonimage.helper
  */
 import android.app.AlertDialog
 import android.app.Activity
+import android.app.ProgressDialog
+import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -35,10 +37,15 @@ import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import com.pukkait.showlocationonimage.camera.CameraActivity
+import com.pukkait.showlocationonimage.compress.compressImage
+import com.pukkait.showlocationonimage.cropImage.CropActivity
+import com.pukkait.showlocationonimage.gallery.GalleryActivity
 import com.pukkait.showlocationonimage.gallery.GalleryWrite
 import com.pukkait.showlocationonimage.geotag.FetchGeoLocation
+import com.pukkait.showlocationonimage.helper.HelperClass.getFileFromUri
 import com.pukkait.showlocationonimage.imageConditions.ImageExtensions
 import java.io.File
 import java.io.FileOutputStream
@@ -71,6 +78,8 @@ class ShowLocationOnImage {
 
         internal var appIcon: Int? = null
         internal var isCameraSelected: Boolean = false
+        internal var isImageCompress: Boolean = true
+        internal var minimumFileSize: Double = 1.5
         internal var latitude: Double = 0.0
         internal var longitude: Double = 0.0
         internal val printList = ArrayList<String>()
@@ -109,6 +118,13 @@ class ShowLocationOnImage {
 
     fun setAuthorName(name: String) {
         authorName = name
+    }
+
+    fun compressFileSize(compressImage: Boolean, fileSize: Double?) {
+        if (fileSize != null) {
+            minimumFileSize = fileSize
+        }
+        isImageCompress = compressImage
     }
 
     fun writeBelowImage(isWriteBelowImage: Boolean) {
@@ -155,7 +171,7 @@ class ShowLocationOnImage {
         builder.setItems(options) { dialog, which ->
             when (which) {
                 0 -> captureImageFromCamera(context, activityResultLauncher, listener, actionCode)
-                1 -> pickImageFromGallery(activityResultLauncher, listener, actionCode)
+                1 -> pickImageFromGallery(activityResultLauncher, listener, actionCode, context)
                 2 -> dialog.dismiss()
             }
         }
@@ -165,11 +181,13 @@ class ShowLocationOnImage {
     fun pickImageFromGallery(
         activityResultLauncher: ActivityResultLauncher<Intent>,
         listener: ImageResultListener,
-        actionCode: Int
+        actionCode: Int,
+        context: Context
     ) {
         this.actionCode = actionCode
         this.resultListener = listener
         isCameraSelected = false
+//        launchCropActivity("",context)
         val galleryIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
         activityResultLauncher.launch(galleryIntent)
     }
@@ -193,25 +211,19 @@ class ShowLocationOnImage {
         data: Intent?,
     ) {
         if (resultCode == Activity.RESULT_OK) {
-            val imageUri: Uri? = data?.data
+            imageUri = data?.data
                 ?: data?.extras?.let { if (it.containsKey("data")) Uri.parse(it.getString("data")) else null }
             if (imageUri != null) {
-                val imagePathSel = imageUri.path
+                val imagePathSel = imageUri!!.path
                 if (imagePathSel != null) {
                     val fetchGeoLocation = FetchGeoLocation(context as Activity)
                     latitude = fetchGeoLocation.getLatitude()
                     longitude = fetchGeoLocation.getLongitude()
                     imagePath = imagePathSel
-//                    processImage(context, imagePath)
+                    processImage(imageUri!!, context)
 //                    createImageWithText(File(imagePath), printAppName)
-                    if (!isCameraSelected) {
-                        val galleryWrite = GalleryWrite(context)
-                        if (writeBelowImage) {
-                            galleryWrite.writeBelowImage(imageUri)
-                        } else {
-                            galleryWrite.processCapturedImage(imageUri)
-                        }
-                    }
+//                    launchCropActivity(imagePathSel, context)
+
                     resultListener?.onImageProcessed(imagePath, actionCode)
                 } else {
                     resultListener?.onError("Failed to process image.", actionCode)
@@ -222,6 +234,25 @@ class ShowLocationOnImage {
         } else {
             resultListener?.onError("Image selection failed.", actionCode)
         }
+    }
+
+    fun processImage(uri: Uri, context: Activity) {
+        if (!compressImage(context, uri)) {
+            resultListener?.onError("Failed to process image.", actionCode)
+        }
+        if (!isCameraSelected) {
+            val galleryWrite = GalleryWrite(context)
+            if (writeBelowImage) {
+                galleryWrite.writeBelowImage(imageUri)
+            } else {
+                galleryWrite.processCapturedImage(imageUri)
+            }
+            if (!compressImage(context, imageUri)) {
+                Log.d("aditi", "again")
+                resultListener?.onError("Failed to process image.", actionCode)
+            }
+        }
+
     }
 }
 

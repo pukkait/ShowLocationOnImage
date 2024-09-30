@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.WRITE_MEDIA_IMAGES" />
 
     <uses-feature
         android:name="android.hardware.camera"
@@ -22,7 +23,10 @@
 
     <application>
         <activity
-            android:name=".gallery.CropActivity"
+            android:name=".gallery.GalleryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".cropImage.CropActivity"
             android:exported="false" />
         <activity android:name=".camera.CameraActivity" />
     </application>

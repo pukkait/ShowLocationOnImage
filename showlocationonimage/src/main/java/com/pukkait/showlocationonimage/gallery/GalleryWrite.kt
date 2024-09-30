@@ -47,6 +47,8 @@ class GalleryWrite(
 ) {
 
     fun writeBelowImage(imageUri: Uri?) {
+        Log.d("aditi ", "writeBelowImage: " + imageUri.toString())
+
         try {
             if (imageUri == null) {
                 Toast.makeText(context, "File not found.!", Toast.LENGTH_SHORT).show()
@@ -136,12 +138,16 @@ class GalleryWrite(
                 ShowLocationOnImage.appIcon,
             )
 
-            saveImage(resultBitmap)
+            HelperClass.saveImage(resultBitmap, context)
         } catch (e: IOException) {
+            Log.d("aditi ", "error: " + e.message)
+
             e.printStackTrace()
         }
     }
+
     fun processCapturedImage(imageUri: Uri?) {
+        Log.d("aditi ", "processCapturedImage: " + imageUri.toString())
         try {
             if (imageUri == null) {
                 Toast.makeText(context, "File not found.!", Toast.LENGTH_SHORT).show()
@@ -193,10 +199,13 @@ class GalleryWrite(
                 ShowLocationOnImage.appIcon
             )
 
-            saveImage(mutableBitmap)
+            HelperClass.saveImage(mutableBitmap, context)
         } catch (e: IOException) {
+            Log.d("aditi ", "ERROR GW " + e.message)
             e.printStackTrace()
         }
+        Log.d("aditi ", "processCapturedImage: FINAL " + ShowLocationOnImage.imagePath)
+
     }
 
     private fun drawAppNameAndLogo(
@@ -329,6 +338,7 @@ class GalleryWrite(
             }
         }
     }
+
     private fun wrapText(
         textLines: List<String>,
         paint: Paint,
@@ -421,21 +431,6 @@ class GalleryWrite(
         }
     }
 
-    private fun saveImage(bitmap: Bitmap) {
-        val file = HelperClass.createImageFile(context)
-        try {
-            FileOutputStream(file).use { fos ->
-                bitmap.compress(
-                    HelperClass.getImageExtension(ShowLocationOnImage.imageExtensions),
-                    100,
-                    fos
-                )
-            }
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-        ShowLocationOnImage.imagePath = file.absolutePath
-    }
 
     private fun dpToPx(dp: Float): Float {
         return dp * context.resources.displayMetrics.density

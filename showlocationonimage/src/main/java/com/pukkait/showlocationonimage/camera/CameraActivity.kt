@@ -205,7 +205,7 @@ class CameraActivity : ComponentActivity() {
                     cameraProvider.unbindAll()
                     cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture)
                 } catch (e: Exception) {
-                    Log.e("CameraX", "Use case binding failed", e)
+                    Log.d("CameraX", "Use case binding failed", e)
                 }
             }, ContextCompat.getMainExecutor(this))
         } catch (_: Exception) {
@@ -217,7 +217,7 @@ class CameraActivity : ComponentActivity() {
         try {
             val photoFile = File(
                 getOutputDirectory(),
-                "${System.currentTimeMillis()}.${ShowLocationOnImage.imageExtensions}"
+                "${System.currentTimeMillis()}${ShowLocationOnImage.imageExtensions}"
             )
 
             val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
@@ -227,12 +227,12 @@ class CameraActivity : ComponentActivity() {
                 cameraExecutor,
                 object : ImageCapture.OnImageSavedCallback {
                     override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                        Log.d("CameraX", "Photo capture succeeded: ${photoFile.absolutePath}")
+                        Log.d("aditi CameraX", "Photo capture succeeded: ${photoFile.absolutePath}")
                         addGraphicsToImage(photoFile.absolutePath)
                     }
 
                     override fun onError(exception: ImageCaptureException) {
-                        Log.e("CameraX", "Photo capture failed: ${exception.message}", exception)
+                        Log.d("aditi CameraX", "Photo capture failed: ${exception.message}", exception)
                     }
                 })
         } catch (_: Exception) {
