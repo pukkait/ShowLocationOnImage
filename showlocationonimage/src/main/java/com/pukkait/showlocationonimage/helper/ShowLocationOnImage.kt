@@ -41,8 +41,7 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import com.pukkait.showlocationonimage.camera.CameraActivity
 import com.pukkait.showlocationonimage.compress.compressImage
-import com.pukkait.showlocationonimage.cropImage.CropActivity
-import com.pukkait.showlocationonimage.gallery.GalleryActivity
+import com.pukkait.showlocationonimage.cropper.CropImageActivity
 import com.pukkait.showlocationonimage.gallery.GalleryWrite
 import com.pukkait.showlocationonimage.geotag.FetchGeoLocation
 import com.pukkait.showlocationonimage.helper.HelperClass.getFileFromUri
@@ -188,7 +187,7 @@ class ShowLocationOnImage {
         this.resultListener = listener
         isCameraSelected = false
 //        launchCropActivity("",context)
-        val galleryIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        val galleryIntent = Intent(context, CropImageActivity::class.java)
         activityResultLauncher.launch(galleryIntent)
     }
 

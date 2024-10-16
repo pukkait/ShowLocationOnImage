@@ -14,6 +14,7 @@ import com.pukkait.showlocationonimage.helper.ShowLocationOnImage.Companion.mini
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.util.UUID
 
 fun compressImage(context: Context, uri: Uri?): Boolean {
     if (uri == null) {
@@ -65,7 +66,8 @@ fun reduceImageSize(file: File, context: Context): File? {
         // Decode the image file into a Bitmap
         bitmap = BitmapFactory.decodeFile(file.absolutePath) ?: return null
         // Create a new file in the cache directory for the compressed image
-        val compressedFile = File(context.cacheDir, "compressed_image.jpg")
+        val fileName = "IMG_" + UUID.randomUUID().toString()
+        val compressedFile = File(context.cacheDir, "$fileName.jpg")
         // Clear the previous compressed file if it exists
         if (compressedFile.exists()) {
             compressedFile.delete()
