@@ -181,12 +181,45 @@ object HelperClass {
                 return file
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            return try {
+                val inputStream = when {
+                    uri.scheme == "content" -> {
+                        // Handle content URIs
+                        contentResolver.openInputStream(uri) ?: return null
+                    }
+
+                    uri.scheme == "storage" -> {
+                        return File(uri.path)
+                    }
+
+                    uri.scheme == "file" || uri.scheme == null -> {
+                        // Handle file URIs or null schemes directly
+                        return File(uri.path ?: return null)
+                    }
+
+                    else -> {
+                        return null
+                    }
+                } ?: return null
+                // Create a temporary file in the cache directory
+                val tempFile = File.createTempFile("temp", null, context.cacheDir)
+
+                // Use the input stream to write to the temp file
+                inputStream.use { input ->
+                    tempFile.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
+                }
+                tempFile
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
         }
         return null
     }
 
-//    fun getFileFromUri(
+//    fun getFileFromUri1(
 //        uri: Uri,
 //        contentResolver: ContentResolver,
 //        context: Context
