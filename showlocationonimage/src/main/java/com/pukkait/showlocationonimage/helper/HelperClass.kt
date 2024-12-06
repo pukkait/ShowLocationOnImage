@@ -162,56 +162,70 @@ object HelperClass {
                 )
             }
         } catch (e: IOException) {
-            Log.d("aditi ", "error1 : ${e.message}")
+            Log.d("log ", "error1 : ${e.message}")
 
             e.printStackTrace()
         }
 
         imagePath = file.absolutePath
-        Log.d("aditi ", "saveImage Final : $imagePath")
+        Log.d("log ", "saveImage Final : $imagePath")
         imageUri = Uri.fromFile(file)
     }
 
-    fun getFileFromUri(
-        uri: Uri,
-        contentResolver: ContentResolver,
-        context: Context
-    ): File? {
-        return try {
-            val inputStream = when {
-                uri.scheme == "content" -> {
-                    // Handle content URIs
-                    contentResolver.openInputStream(uri) ?: return null
-                }
-
-                uri.scheme == "storage" -> {
-                    return File(uri.path)
-                }
-
-                uri.scheme == "file" || uri.scheme == null -> {
-                    // Handle file URIs or null schemes directly
-                    return File(uri.path ?: return null)
-                }
-
-                else -> {
-                    return null
-                }
-            } ?: return null
-            // Create a temporary file in the cache directory
-            val tempFile = File.createTempFile("temp", null, context.cacheDir)
-
-            // Use the input stream to write to the temp file
-            inputStream.use { input ->
-                tempFile.outputStream().use { output ->
-                    input.copyTo(output)
-                }
+    fun getFileFromUri(uri: Uri, contentResolver: ContentResolver, context: Context): File? {
+        try {
+            val file = File(context.cacheDir, UUID.randomUUID().toString())
+            contentResolver.openInputStream(uri)?.use { inputStream ->
+                val outputStream = FileOutputStream(file)
+                inputStream.copyTo(outputStream)
+                return file
             }
-            tempFile
         } catch (e: Exception) {
             e.printStackTrace()
-            null
         }
+        return null
     }
+
+//    fun getFileFromUri(
+//        uri: Uri,
+//        contentResolver: ContentResolver,
+//        context: Context
+//    ): File? {
+//        return try {
+//            val inputStream = when {
+//                uri.scheme == "content" -> {
+//                    // Handle content URIs
+//                    contentResolver.openInputStream(uri) ?: return null
+//                }
+//
+//                uri.scheme == "storage" -> {
+//                    return File(uri.path)
+//                }
+//
+//                uri.scheme == "file" || uri.scheme == null -> {
+//                    // Handle file URIs or null schemes directly
+//                    return File(uri.path ?: return null)
+//                }
+//
+//                else -> {
+//                    return null
+//                }
+//            } ?: return null
+//            // Create a temporary file in the cache directory
+//            val tempFile = File.createTempFile("temp", null, context.cacheDir)
+//
+//            // Use the input stream to write to the temp file
+//            inputStream.use { input ->
+//                tempFile.outputStream().use { output ->
+//                    input.copyTo(output)
+//                }
+//            }
+//            tempFile
+//        } catch (e: Exception) {
+//            e.printStackTrace()
+//            null
+//        }
+//    }
 
 
 }

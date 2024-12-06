@@ -24,6 +24,7 @@ fun compressImage(context: Context, uri: Uri?): Boolean {
 
         val contentResolver = context.contentResolver
         val file: File? = getFileFromUri(uri, contentResolver, context)
+
         if (isImageCompress) {
             file?.let {
                 val fileSizeInMB = it.length() / (1024 * 1024)
@@ -53,18 +54,33 @@ fun compressImage(context: Context, uri: Uri?): Boolean {
             pd.hide()
             return true
         }
-
     }
 }
+
 
 fun reduceImageSize(file: File, context: Context): File? {
     var quality = 100 // Start with the highest quality
     var bitmap: Bitmap? = null
-//    val minSize = 1.5
-//    Log.d("aditi minSize", minSize.toString())
+
     return try {
-        // Decode the image file into a Bitmap
-        bitmap = BitmapFactory.decodeFile(file.absolutePath) ?: return null
+        // Decode the image file into a Bitmap with sample size to avoid memory issues
+        val options = BitmapFactory.Options().apply {
+            // Set inJustDecodeBounds to get image dimensions without loading the whole image
+            inJustDecodeBounds = true
+            BitmapFactory.decodeFile(file.absolutePath, this)
+            val imageHeight = outHeight
+            val imageWidth = outWidth
+            val maxDimension = 1024 // Set a reasonable max dimension for decoding
+
+            // Calculate the sample size based on the image dimensions
+            inSampleSize = calculateInSampleSize(imageWidth, imageHeight, maxDimension)
+            inJustDecodeBounds = false
+        }
+
+        // Decode the image with the calculated sample size (downsampling)
+        bitmap = BitmapFactory.decodeFile(file.absolutePath, options)
+        if (bitmap == null) return null
+
         // Create a new file in the cache directory for the compressed image
         val fileName = "IMG_" + UUID.randomUUID().toString()
         val compressedFile = File(context.cacheDir, "$fileName.jpg")
@@ -72,8 +88,10 @@ fun reduceImageSize(file: File, context: Context): File? {
         if (compressedFile.exists()) {
             compressedFile.delete()
         }
+
+        // Start compression loop
         do {
-            Log.d("aditi size", compressedFile.length().toString())
+            Log.d("log size", compressedFile.length().toString())
 
             // Create output stream for the compressed file
             val outputStream = FileOutputStream(compressedFile)
@@ -91,9 +109,7 @@ fun reduceImageSize(file: File, context: Context): File? {
                 quality -= 10
             }
 
-        } while (quality > 0 && compressedFile.length() / (1024 * 1024) > minimumFileSize) // Repeat until the size is ≤ 2MB
-//        val file: File = File(selectedPath)
-//        val file_size = (file.length() / 1024).toString().toInt()
+        } while (quality > 0 && compressedFile.length() / (1024 * 1024) > minimumFileSize) // Loop until file is within size limit
 
         // Recycle the bitmap to free up memory
         bitmap.recycle()
@@ -106,4 +122,16 @@ fun reduceImageSize(file: File, context: Context): File? {
     } finally {
         bitmap?.recycle() // Ensure the bitmap is recycled
     }
+}
+
+private fun calculateInSampleSize(width: Int, height: Int, maxDimension: Int): Int {
+    var inSampleSize = 1
+    if (width > maxDimension || height > maxDimension) {
+        val halfWidth = width / 2
+        val halfHeight = height / 2
+        while (halfWidth / inSampleSize > maxDimension || halfHeight / inSampleSize > maxDimension) {
+            inSampleSize *= 2
+        }
+    }
+    return inSampleSize
 }
