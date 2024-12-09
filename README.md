@@ -1,7 +1,7 @@
 # ShowLocationOnImage - Android Library
 
 [![Download](https://img.shields.io/github/release/pukkait/ShowLocationOnImage.svg?style=flat)](https://github.com/pukkait/ShowLocationOnImage/releases)
-[![API](https://img.shields.io/badge/API-19%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=19)
+[![API](https://img.shields.io/badge/API-19%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=34)
 ![Language](https://img.shields.io/badge/language-Kotlin-orange.svg)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
@@ -42,7 +42,7 @@ In your app-level `build.gradle` file, add the following dependency:
 
 ```groovy
 dependencies {
-    implementation 'com.github.pukkait:ShowLocationOnImage:v1.0'
+    implementation 'com.github.pukkait:ShowLocationOnImage:x.x.x'
 }
 ```
 
