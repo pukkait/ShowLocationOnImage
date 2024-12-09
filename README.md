@@ -20,7 +20,7 @@ With this library, you can retrieve the location from an image's EXIF data and d
 
 ## Preview
 
-![ShowLocationOnImage Preview](https://github.com/pukkait/ShowLocationOnImage/Teruel_overview_size_8MB_(25441803782).jpg?raw=true)
+![ShowLocationOnImage Preview](https://github.com/pukkait/ShowLocationOnImage/blob/main/assets/Screenshot.png)
 
 ## Installation
 
@@ -34,6 +34,10 @@ allprojects {
         maven { url 'https://jitpack.io' }
     }
 }
+```
+kotlin:
+```kotlin
+maven { url = uri("https://jitpack.io") }
 ```
 
 ### Step 2: Add the Dependency
