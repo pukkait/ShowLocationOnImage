@@ -20,7 +20,7 @@ With this library, you can retrieve the location from an image's EXIF data and d
 
 ## Preview
 
-![ShowLocationOnImage Preview](https://github.com/pukkait/ShowLocationOnImage/blob/main/preview.png?raw=true)
+![ShowLocationOnImage Preview](https://github.com/pukkait/ShowLocationOnImage/Teruel_overview_size_8MB_(25441803782).jpg?raw=true)
 
 ## Installation
 
