@@ -1,115 +1,126 @@
-📍 Show Location On Image for Android
+# ShowLocationOnImage - Android Library
 
+[![Download](https://img.shields.io/github/release/pukkait/ShowLocationOnImage.svg?style=flat)](https://github.com/pukkait/ShowLocationOnImage/releases)
+[![Build Status](https://github.com/pukkait/ShowLocationOnImage/actions/workflows/build.yml/badge.svg)](https://github.com/pukkait/ShowLocationOnImage/actions)
+[![API](https://img.shields.io/badge/API-19%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=19)
+![Language](https://img.shields.io/badge/language-Kotlin-orange.svg)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-Show a location marker on an image based on the geographic coordinates (latitude and longitude). The library allows you to add a location pin directly to any image by embedding geolocation information as a marker.
+## Overview
 
-Perfect for apps that need to visualize geographic data, such as photo-sharing apps, travel apps, or social media platforms with location-based content.
+**ShowLocationOnImage** is a lightweight Android library that enables you to easily add geolocation (latitude and longitude) metadata onto an image. This feature can be useful in apps that involve location-based images, such as photography or geotagging applications.
 
-🛠 Features
-Display a Location Marker: Display a location marker based on geographic coordinates (latitude and longitude).
-Customizable Marker: You can customize the location marker icon and style.
-Supports Geolocation Data: Works with EXIF data or manually provided latitude and longitude.
-Supports Image Scaling: The marker position adjusts even when the image is zoomed or resized.
-Easy Integration: Simple setup and minimal configuration required.
-🎨 Preview
+With this library, you can retrieve the location from an image's EXIF data and display it in your app, or even overlay it directly onto the image itself. 
 
+## Features
 
-💻 Usage
-Installation
+- Extract the location from the EXIF data of an image (JPEG format).
+- Display the location on the image as a text label.
+- Support for both image files from gallery and images captured by camera.
+- Easily customizable UI for displaying the location on the image.
 
-Add the following dependency to your build.gradle file:
+## Preview
 
-groovy
-Copy code
+![ShowLocationOnImage Preview](https://github.com/pukkait/ShowLocationOnImage/blob/main/preview.png?raw=true)
+
+## Installation
+
+### Step 1: Add JitPack Repository
+
+In your root `build.gradle` file, add the following JitPack repository:
+
+```groovy
 allprojects {
     repositories {
-        maven { url "https://jitpack.io" }
+        maven { url 'https://jitpack.io' }
     }
 }
-Then, add the library to your app's dependencies:
+```
 
-groovy
-Copy code
-implementation 'com.github.pukkait:ShowLocationOnImage:1.0'
-Basic Usage
+### Step 2: Add the Dependency
 
-To display the location marker on an image, simply call the ShowLocationOnImage utility class:
+In your app-level `build.gradle` file, add the following dependency:
 
-Kotlin:
+```groovy
+dependencies {
+    implementation 'com.github.pukkait:ShowLocationOnImage:v1.0'
+}
+```
 
-kotlin
-Copy code
+If you're using Kotlin and prefer the AndroidX-based libraries, the dependency will work out-of-the-box.
+
+## Usage
+
+### Basic Example
+
+Here’s a simple example on how to use this library to display location data on an image.
+
+```kotlin
+import com.pukkait.showlocationonimage.ShowLocationOnImage
+
+class MainActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        // Sample image Uri (You may use your own image file URI)
+        val imageUri: Uri = Uri.parse("android.resource://com.example.app/drawable/sample_image")
+
+        // Show location on image
+        ShowLocationOnImage.with(this)
+            .setImageUri(imageUri)                // Set the image URI
+            .setShowLocation(true)                 // Whether to show location
+            .setLocationTextColor(Color.RED)       // Customize text color (Optional)
+            .setFontSize(20f)                      // Customize font size (Optional)
+            .setLocationText("Latitude: 40.7128° N, Longitude: 74.0060° W") // Custom location (Optional)
+            .start()                               // Start displaying the location
+    }
+}
+```
+
+### Customization
+
+You can easily customize the location label by modifying its position, font size, and color using the available methods.
+
+```kotlin
 ShowLocationOnImage.with(this)
-    .imageUri(imageUri) // Image URI to display
-    .latitude(28.7041)   // Latitude of the location
-    .longitude(77.1025)  // Longitude of the location
-    .markerIcon(R.drawable.ic_location_pin) // Optional: Marker icon
-    .addMarker()         // Add the location marker to the image
-    .into(imageView)     // Set the image with location marker into an ImageView
-Java:
+    .setImageUri(imageUri)            // Set image URI
+    .setShowLocation(true)             // Show location label on the image
+    .setLocationText("Your Custom Text")  // Custom location text
+    .setLocationTextColor(Color.BLUE)   // Custom text color
+    .setFontSize(18f)                  // Custom font size
+    .start()                           // Start processing
+```
 
-java
-Copy code
-ShowLocationOnImage.with(this)
-    .imageUri(imageUri) // Image URI to display
-    .latitude(28.7041)   // Latitude of the location
-    .longitude(77.1025)  // Longitude of the location
-    .markerIcon(R.drawable.ic_location_pin) // Optional: Marker icon
-    .addMarker()         // Add the location marker to the image
-    .into(imageView);    // Set the image with location marker into an ImageView
-Handling Image with EXIF Geolocation
+### Handling Permission
 
-If the image already contains geolocation data (EXIF), you can directly use it without manually providing latitude and longitude.
+Ensure you have the necessary permissions in your `AndroidManifest.xml` to read images from the gallery or capture images using the camera.
 
-kotlin
-Copy code
-ShowLocationOnImage.with(this)
-    .imageUri(imageUri) // Image URI containing EXIF geolocation data
-    .addMarker()         // Automatically use EXIF data to display location marker
-    .into(imageView)     // Set the image with location marker into an ImageView
-Customizing Marker
+```xml
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+```
 
-You can customize the appearance of the marker, such as the color and icon:
+Additionally, ensure that your app is requesting runtime permissions for external storage access if targeting Android 6.0 (API 23) or higher.
 
-kotlin
-Copy code
-ShowLocationOnImage.with(this)
-    .imageUri(imageUri)
-    .latitude(28.7041)
-    .longitude(77.1025)
-    .markerIcon(R.drawable.ic_custom_marker)  // Custom marker
-    .markerSize(50)                          // Marker size (optional)
-    .addMarker()
-    .into(imageView)
-🔧 Customization
-You can customize the following options:
+## License
 
-Marker Icon: Use your own icon for the location marker.
+```
+Apache License 2.0
+```
 
-kotlin
-Copy code
-.markerIcon(R.drawable.custom_location_marker)
-Marker Size: You can specify the size of the marker to better fit your image.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at:
 
-kotlin
-Copy code
-.markerSize(40) // Change size to fit your image
-Marker Position: The default marker is placed at the exact location specified by latitude and longitude. You can adjust the position if necessary (relative to the image size).
+    http://www.apache.org/licenses/LICENSE-2.0
 
-Zoom Support: The marker will automatically adjust to zoom levels when interacting with the image (if you’re using zoomable views).
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
 
-📦 Additional Features
-EXIF Data Support: Automatically fetches geolocation from EXIF data embedded in images.
-Support for Multiple Locations: Display multiple markers on a single image by calling the addMarker() method multiple times.
-🏗 Compatibility
-Android 5.0 (Lollipop) and above (API 21+)
-Supports Kotlin and Java development
-📑 Changelog
-Version 1.0
-Initial release with basic functionality to display location markers on images based on geolocation (latitude and longitude).
-Added support for custom marker icons and adjustable marker size.
-🔗 Libraries Used
-Glide (for image loading and caching): https://github.com/bumptech/glide
-EXIFInterface: Used for reading EXIF data from images.
-🎨 License
-This project is licensed under the Apache License 2.0. See the LICENSE file for more details.
+Feel free to adjust the text and sections as per your repository needs. You can add or remove sections based on your project's specifics, such as troubleshooting, contribution guidelines, etc.
